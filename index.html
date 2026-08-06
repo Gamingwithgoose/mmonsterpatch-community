@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="The independent MMOnsterpatch community hub for player profiles, server ranks, news, and social features.">
+  <meta name="theme-color" content="#173328">
+  <title>MMOnsterpatch Community</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/styles.css">
+  <script src="config.js" defer></script>
+  <script src="assets/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <nav class="nav-wrap" aria-label="Primary navigation">
+      <a class="brand" href="index.html">
+        <img src="assets/logo.svg" alt="">
+        <span class="brand-copy"><strong>MMOnsterpatch</strong><small>Community Network</small></span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-label="Open navigation">Menu</button>
+      <div class="nav-links">
+        <a href="index.html" aria-current="page">Home</a>
+        <a href="community.html">Community</a>
+        <a href="#server">Server</a>
+        <a href="about.html">About</a>
+      </div>
+      <div class="nav-actions">
+        <a class="button secondary small" data-account-link="login" href="https://account.gamingwithgoose.com/login">Log in</a>
+        <a class="button small" data-account-link="register" href="https://account.gamingwithgoose.com/register">Create account</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <span class="eyebrow">Independent player community</span>
+          <h1>Your MMOnsterpatch home, on and off the server.</h1>
+          <p>Meet players, share progress, view linked characters, and carry your MMOnsterpatch identity from the game server into one cozy community space.</p>
+          <div class="hero-actions">
+            <a class="button" data-account-link="register" href="https://account.gamingwithgoose.com/register">Create your account</a>
+            <a class="button secondary" href="community.html">Preview the community</a>
+          </div>
+          <p class="microcopy">Existing server players can use the same account website to log in and view linked characters.</p>
+        </div>
+
+        <div class="hero-panel" aria-label="Community interface preview">
+          <div class="app-window">
+            <div class="app-topbar"><strong>Community Feed</strong><div class="dot-set" aria-hidden="true"><i></i><i></i><i></i></div></div>
+            <div class="app-body">
+              <aside class="preview-sidebar" aria-hidden="true"><span>⌂</span><span>♟</span><span>✉</span><span>★</span></aside>
+              <div class="preview-feed">
+                <div class="composer"><span class="avatar-sm">G</span><span>Share an update with the community…</span></div>
+                <article class="preview-post">
+                  <div class="post-head">
+                    <span class="avatar-sm">G</span>
+                    <div><strong>Goose</strong><small>@Goose-1842 · just now</small></div>
+                    <span class="rank-pill">Rank S</span>
+                  </div>
+                  <p>Working on the next MMOnsterpatch server update. The community profile and linked-rank ideas are taking shape.</p>
+                  <div class="post-art" role="img" aria-label="Abstract green and gold community artwork"></div>
+                  <div class="post-stats"><span>12 reactions</span><span>6 comments</span></div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section compact">
+      <div class="container">
+        <div class="section-heading">
+          <span class="eyebrow">One connected identity</span>
+          <h2>Built around the server account system you already use.</h2>
+          <p>The public site links into the existing account website today. Later, the full social application can use the same permanent account identity for profiles, posts, characters, and rank badges.</p>
+        </div>
+        <div class="card-grid">
+          <article class="card"><div class="icon">♙</div><h3>Linked player profiles</h3><p>Show a public community identity alongside approved character information and public handles.</p></article>
+          <article class="card"><div class="icon">S</div><h3>Server rank badges</h3><p>Display the existing E–S ranked profile, RP, win/loss record, and highest rank without granting website permissions.</p></article>
+          <article class="card"><div class="icon">✦</div><h3>Community features</h3><p>Posts, comments, reactions, friends, groups, messages, reports, and moderation can be added in the server-hosted phase.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section status-section" id="server">
+      <div class="container">
+        <div class="section-heading">
+          <span class="eyebrow">Live connection</span>
+          <h2>MMOnsterpatch server status</h2>
+          <p>This panel reads the public launcher-status endpoint from your existing account website. It fails safely if cross-origin access has not been enabled yet.</p>
+        </div>
+        <div class="status-layout">
+          <div class="status-card">
+            <div class="status-line"><span class="status-dot" data-status-dot></span><div><div class="status-title loading-shimmer" data-server-status>Checking live server status</div><p class="status-message loading-shimmer" data-server-message>Connecting to account server status endpoint</p></div></div>
+            <div class="status-stats">
+              <div class="status-stat"><strong class="loading-shimmer" data-player-count>0</strong><span>Players online</span></div>
+              <div class="status-stat"><strong class="loading-shimmer" data-social-count>0</strong><span>Social clients</span></div>
+              <div class="status-stat"><strong class="loading-shimmer" data-server-version>0.0.0</strong><span>Server version</span></div>
+            </div>
+            <a class="button secondary" data-account-link="characters" href="https://account.gamingwithgoose.com/account">View linked characters</a>
+          </div>
+          <div class="status-card">
+            <h3>How account linking works</h3>
+            <div class="steps">
+              <div class="step"><span class="step-number">1</span><div><h3>Create or use an account</h3><p>New players register through the existing account website; current players sign in with their established credentials.</p></div></div>
+              <div class="step"><span class="step-number">2</span><div><h3>Play through the launcher</h3><p>Online save slots become linked characters under the same account identity.</p></div></div>
+              <div class="step"><span class="step-number">3</span><div><h3>Show approved public data</h3><p>Profiles can later display character handles and E–S ranked statistics through a secure server-side API.</p></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="cta-box">
+          <div><h2>Ready to claim your community profile?</h2><p>Create a MMOnsterpatch account or sign in to view the characters already attached to your server identity.</p></div>
+          <div class="cta-actions"><a class="button" data-account-link="register" href="https://account.gamingwithgoose.com/register">Create account</a><a class="button secondary" data-account-link="login" href="https://account.gamingwithgoose.com/login">Log in</a></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div><div class="footer-brand"><img src="assets/logo.svg" alt=""><span>MMOnsterpatch Community</span></div><p class="footer-copy">An independent, unofficial community project operated by Gaming With Goose. This website is not the owner of monsterpatch.org and does not copy its code, artwork, or branding.</p></div>
+        <div class="footer-links"><a href="community.html">Community</a><a href="about.html">About</a><a href="privacy.html">Privacy</a><a data-account-link="profile" href="https://account.gamingwithgoose.com/profile">Account profile</a></div>
+      </div>
+      <div class="footer-bottom">© <span data-current-year>2026</span> Gaming With Goose. Replace or expand the legal wording before a public social-network launch.</div>
+    </div>
+  </footer>
+</body>
+</html>

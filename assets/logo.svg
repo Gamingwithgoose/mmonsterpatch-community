@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">MMOnsterpatch Community emblem</title>
+  <desc id="desc">An original leaf and patch emblem with the letters MMP.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#264f3d"/>
+      <stop offset="1" stop-color="#173328"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d8c27a"/>
+      <stop offset="1" stop-color="#9ab56b"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="30" fill="url(#bg)" stroke="#d8c27a" stroke-width="5"/>
+  <path d="M78 25c-23 4-39 17-43 39 20 1 37-7 48-28-3 16-12 29-26 38 8 10 17 17 29 21 12-18 13-45-8-70Z" fill="url(#leaf)" opacity=".95"/>
+  <path d="M37 82h54" stroke="#f5edd9" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+  <text x="64" y="105" text-anchor="middle" fill="#f5edd9" font-family="Georgia,serif" font-size="22" font-weight="700">MMP</text>
+</svg>

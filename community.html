@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Preview the planned MMOnsterpatch social community interface.">
+  <meta name="theme-color" content="#173328">
+  <title>Community Preview | MMOnsterpatch</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/styles.css">
+  <script src="config.js" defer></script>
+  <script src="assets/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <nav class="nav-wrap" aria-label="Primary navigation">
+      <a class="brand" href="index.html"><img src="assets/logo.svg" alt=""><span class="brand-copy"><strong>MMOnsterpatch</strong><small>Community Network</small></span></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-label="Open navigation">Menu</button>
+      <div class="nav-links"><a href="index.html">Home</a><a href="community.html" aria-current="page">Community</a><a href="index.html#server">Server</a><a href="about.html">About</a></div>
+      <div class="nav-actions"><a class="button secondary small" data-account-link="login" href="https://account.gamingwithgoose.com/login">Log in</a><a class="button small" data-account-link="register" href="https://account.gamingwithgoose.com/register">Create account</a></div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="page-hero"><div class="container"><span class="eyebrow">Static design preview</span><h1>The future community feed.</h1><p>This page demonstrates the planned visual direction. Likes work locally as a small preview, but posts, comments, profiles, and messages will require the server-hosted social backend.</p></div></section>
+
+    <section class="section compact">
+      <div class="container">
+        <div class="notice"><strong>Preview only:</strong> Nothing posted here is saved to the MMOnsterpatch server. The GitHub Pages build contains no passwords, private account data, or database connection.</div>
+      </div>
+    </section>
+
+    <section class="section compact">
+      <div class="container community-layout">
+        <aside class="panel"><div class="panel-title"><h3>Explore</h3></div><nav class="side-nav" aria-label="Community sections"><a class="active" href="#">Home feed</a><a href="#">Friends</a><a href="#">Groups</a><a href="#">Messages</a><a href="#">Ranked players</a><a href="#">Server news</a></nav></aside>
+
+        <div class="feed-stack">
+          <div class="panel"><div class="composer"><span class="avatar-sm">G</span><span>Log in to share an update…</span><a class="button small" data-account-link="login" href="https://account.gamingwithgoose.com/login">Log in</a></div></div>
+
+          <article class="social-card">
+            <div class="social-head"><span class="avatar-sm">G</span><div class="social-meta"><strong>Goose <span class="rank-pill">Rank S</span></strong><span>@Goose-1842 · Server Administrator · 18 minutes ago</span></div></div>
+            <p>The new community design is online as a GitHub Pages preview. Next comes the real social backend and secure account linking.</p>
+            <div class="post-art" role="img" aria-label="Abstract green and gold project artwork"></div>
+            <div class="post-stats"><span>12 reactions</span><span>6 comments</span></div>
+            <div class="social-actions"><button type="button" data-demo-like aria-pressed="false">♡ Like</button><button type="button">Comment</button><button type="button">Share</button></div>
+          </article>
+
+          <article class="social-card">
+            <div class="social-head"><span class="avatar-sm">M</span><div class="social-meta"><strong>Maple <span class="rank-pill">Rank B</span></strong><span>@Maple-3071 · 2 hours ago</span></div></div>
+            <p>Finally reached Rank B! I would love a profile section that shows the current character, highest rank, and ranked record.</p>
+            <div class="post-stats"><span>8 reactions</span><span>3 comments</span></div>
+            <div class="social-actions"><button type="button" data-demo-like aria-pressed="false">♡ Like</button><button type="button">Comment</button><button type="button">Share</button></div>
+          </article>
+
+          <article class="social-card">
+            <div class="social-head"><span class="avatar-sm">S</span><div class="social-meta"><strong>Server News</strong><span>Official community update · yesterday</span></div></div>
+            <p>Planned profile integration can show public character handles and ranked stats while keeping credentials, saves, and administrative permissions private.</p>
+            <div class="post-stats"><span>21 reactions</span><span>9 comments</span></div>
+            <div class="social-actions"><button type="button" data-demo-like aria-pressed="false">♡ Like</button><button type="button">Comment</button><button type="button">Share</button></div>
+          </article>
+        </div>
+
+        <aside class="panel">
+          <div class="panel-title"><h3>Server status</h3><span class="status-dot" data-status-dot></span></div>
+          <strong data-server-status class="loading-shimmer">Checking status</strong>
+          <p class="status-message" data-server-message>Connecting to the account server.</p>
+          <div class="online-list" aria-label="Example online members">
+            <div class="online-person"><span class="avatar-sm">G</span><span>Goose</span><i class="presence" aria-label="Online"></i></div>
+            <div class="online-person"><span class="avatar-sm">M</span><span>Maple</span><i class="presence" aria-label="Online"></i></div>
+            <div class="online-person"><span class="avatar-sm">R</span><span>Rook</span><i class="presence" aria-label="Online"></i></div>
+          </div>
+          <a class="button secondary small" style="width:100%; margin-top:1rem" data-account-link="characters" href="https://account.gamingwithgoose.com/account">My characters</a>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><div class="container"><div class="footer-grid"><div><div class="footer-brand"><img src="assets/logo.svg" alt=""><span>MMOnsterpatch Community</span></div><p class="footer-copy">Static community preview hosted on GitHub Pages.</p></div><div class="footer-links"><a href="index.html">Home</a><a href="about.html">About</a><a href="privacy.html">Privacy</a></div></div><div class="footer-bottom">© <span data-current-year>2026</span> Gaming With Goose.</div></div></footer>
+</body>
+</html>

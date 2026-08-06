@@ -1,16 +1,11 @@
 /*
-  Safe public configuration for the GitHub Pages frontend.
-  Do not put database passwords, API secrets, tokens, or private IPs here.
+  Public frontend configuration only.
+  Never place passwords, database credentials, private keys, or API secrets here.
 */
 window.MMP_CONFIG = {
-  siteName: "MMOnsterpatch Community",
-  accountBaseUrl: "https://account.gamingwithgoose.com",
-  loginPath: "/login",
-  registerPath: "/register",
-  profilePath: "/profile",
-  charactersPath: "/account",
+  siteName: "MMOnsterpatch",
+  mode: "prototype",
+  apiBaseUrl: "https://account.gamingwithgoose.com/api",
   statusApiUrl: "https://account.gamingwithgoose.com/api/launcher/status",
-  onlineUsersApiUrl: "https://account.gamingwithgoose.com/api/server/online-users",
-  statusRefreshMs: 60000,
-  repositoryUrl: "https://github.com/gamingwithgoose"
+  statusRefreshMs: 60000
 };

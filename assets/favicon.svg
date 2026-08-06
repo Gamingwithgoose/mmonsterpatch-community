@@ -1,4 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="16" fill="#1d4434"/>
-  <path d="M43 12C28 15 18 24 16 39c13 0 24-5 31-19-2 11-8 19-17 25 5 4 10 7 17 8 8-12 8-29-4-41Z" fill="#d8c27a"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">MMOnsterpatch</title>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2e6b52"/>
+      <stop offset="1" stop-color="#173328"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="31" fill="url(#g)"/>
+  <path d="M28 86V42h17l19 24 19-24h17v44H83V64L64 87 45 64v22z" fill="#fff9e9"/>
+  <path d="M24 30h80" stroke="#d8c27a" stroke-width="7" stroke-linecap="round"/>
 </svg>

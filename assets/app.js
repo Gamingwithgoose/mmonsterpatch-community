@@ -822,8 +822,8 @@
     if(!canModerate()) throw new Error("Moderator permission is required.");
     const root=document.querySelector("#view-root");
     const data=await api(`/community/moderation?q=${encodeURIComponent(query)}`);
-    const members=data.members||[],reports=data.reports||[];
-    root.innerHTML=`<div class="page-head"><div><h1>Moderation Tools</h1><p>Look up community accounts, manage permissions, and review reported posts.</p></div>${roleBadgeHtml(currentRole())}</div>
+    const members=data.members||[],reports=data.reports||[],userReports=data.userReports||[];
+    root.innerHTML=`<div class="page-head"><div><h1>Moderation Tools</h1><p>Look up community accounts, manage permissions, and review reported posts and accounts.</p></div>${roleBadgeHtml(currentRole())}</div>
       <section class="content-card moderation-section">
         <div class="section-heading"><h2>User lookup</h2></div>
         <form class="moderation-search" data-moderation-search><label><span data-icon="search"></span><input name="q" value="${attr(query)}" placeholder="Username, display name, or email" minlength="2"></label><button class="primary-button" type="submit">Search</button></form>
@@ -840,7 +840,11 @@
       </section>
       <section class="content-card moderation-section">
         <div class="section-heading"><h2>Open reports</h2><span>${reports.length}</span></div>
-        <div class="report-list">${reports.length?reports.map(report=>`<article class="report-card" data-report-id="${attr(report.reportId)}"><div><strong>${escapeHtml(report.reason)}</strong><small>${formatDate(report.createdUtc)} · Post ${escapeHtml(report.postId)}</small><p>${escapeHtml(report.details||"No additional details.")}</p></div><div class="report-actions"><a class="secondary-button small" href="#/post/${attr(report.postId)}">View</a><button class="secondary-button small" type="button" data-report-action="dismiss">Dismiss</button><button class="danger-button small" type="button" data-report-action="remove">Remove Post</button></div></article>`).join(""):'<div class="empty-card"><div class="empty-icon" data-icon="shield-check"></div><h2>No open reports</h2><p>The moderation queue is clear.</p></div>'}</div>
+        <div class="report-list">${reports.length?reports.map(report=>`<article class="report-card" data-report-id="${attr(report.reportId)}"><div><strong>${escapeHtml(report.reason)}</strong><small>${formatDate(report.createdUtc)} · Post ${escapeHtml(report.postId)}</small><p>${escapeHtml(report.details||"No additional details.")}</p></div><div class="report-actions"><a class="secondary-button small" href="#/post/${attr(report.postId)}">View</a><button class="secondary-button small" type="button" data-report-action="dismiss">Dismiss</button><button class="danger-button small" type="button" data-report-action="remove">Remove Post</button></div></article>`).join(""):'<div class="empty-card"><div class="empty-icon" data-icon="shield-check"></div><h2>No open post reports</h2><p>No posts currently need review.</p></div>'}</div>
+      </section>
+      <section class="content-card moderation-section">
+        <div class="section-heading"><h2>Reported users</h2><span>${userReports.length}</span></div>
+        <div class="report-list">${userReports.length?userReports.map(report=>{const target=report.reported||{};return `<article class="report-card" data-user-report-id="${attr(report.reportId)}"><div><strong>${escapeHtml(report.reason)}</strong><small>${formatDate(report.createdUtc)} · ${escapeHtml(target.displayName||report.reportedAccountId)}</small><p>${escapeHtml(report.details||"No additional details.")}</p></div><div class="report-actions"><button class="secondary-button small" type="button" data-moderation-message="${attr(report.reportedAccountId)}">Message</button><button class="secondary-button small" type="button" data-user-report-dismiss>Dismiss</button></div></article>`}).join(""):'<div class="empty-card"><div class="empty-icon" data-icon="shield-check"></div><h2>No reported users</h2><p>No user reports currently need review.</p></div>'}</div>
       </section>`;
     injectIcons(root);
     root.querySelector("[data-moderation-search]").addEventListener("submit",event=>{event.preventDefault();renderModeration(event.currentTarget.elements.q.value.trim());});
@@ -858,6 +862,11 @@
       const card=btn.closest("[data-report-id]"),action=btn.dataset.reportAction;
       if(action==="remove"&&!confirm("Remove the reported post?"))return;
       try{await api(`/community/moderation/reports/${encodeURIComponent(card.dataset.reportId)}`,{method:"POST",body:JSON.stringify({action,note:"Reviewed in web moderation tools"})});toast(action==="remove"?"Reported post removed.":"Report dismissed.");await renderModeration(query);}
+      catch(ex){toast(ex.message);}
+    }));
+    root.querySelectorAll("[data-user-report-dismiss]").forEach(btn=>btn.addEventListener("click",async()=>{
+      const card=btn.closest("[data-user-report-id]");if(!confirm("Dismiss this user report after review?"))return;
+      try{await api(`/community/moderation/user-reports/${encodeURIComponent(card.dataset.userReportId)}`,{method:"POST",body:JSON.stringify({action:"dismiss",note:"Reviewed in web moderation tools"})});toast("User report dismissed.");await renderModeration(query);}
       catch(ex){toast(ex.message);}
     }));
   }

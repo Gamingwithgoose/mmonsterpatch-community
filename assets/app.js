@@ -199,7 +199,13 @@
     const main = currentMainCharacter();
     const avatarUrl = profile.avatarUrl || main?.avatarUrl || "";
     document.querySelectorAll("[data-current-name]").forEach(el => el.textContent = user.displayName || user.username || "Player");
-    document.querySelectorAll("[data-current-rank]").forEach(el => el.textContent = main ? `Main Character · Rank ${main.rank || "E"}` : (profile.verifiedPlayer ? "Choose a main character" : "No linked character yet"));
+    document.querySelectorAll("[data-current-rank]").forEach(el => {
+      const mainHandle = main?.publicHandle || main?.displayName || "Main character";
+      el.textContent = main ? `${mainHandle} · Rank ${main.rank || "E"}` : (profile.verifiedPlayer ? "Choose a main character" : "No linked character yet");
+    });
+    document.querySelectorAll("[data-current-guild]").forEach(el => {
+      el.textContent = main?.guildName?.trim() || "No Guild";
+    });
     document.querySelectorAll("[data-current-avatar]").forEach(el => {
       const gameSprite = /\/community-character-assets\//i.test(avatarUrl);
       el.classList.toggle("game-avatar", gameSprite);
@@ -606,7 +612,7 @@
   }
 
   function characterHtml(c,isMain) {
-    return `<article class="character-card ${isMain?"main":""}">${isMain?'<span class="main-character-label">Main Character</span>':""}<div class="character-art"><img src="${attr(c.avatarUrl)}" alt="${attr(c.displayName)} appearance"></div><div class="character-info"><h3>${escapeHtml(c.displayName)}</h3><div class="character-meta"><span>Save Slot ${Number(c.saveSlot||c.slotIndex+1)}</span><span>Rank ${escapeHtml(c.rank||"E")}</span></div><label class="main-character-control"><input type="radio" name="mainCharacter" value="${attr(c.characterId)}" data-main-character ${isMain?"checked":""}>Make Main Character</label></div></article>`;
+    return `<article class="character-card ${isMain?"main":""}">${isMain?'<span class="main-character-label">Main</span>':""}<div class="character-art"><img src="${attr(c.avatarUrl)}" alt="${attr(c.displayName)} appearance"></div><div class="character-info"><h3>${escapeHtml(c.displayName)}</h3><div class="character-meta"><span>Save Slot ${Number(c.saveSlot||c.slotIndex+1)}</span><span>Rank ${escapeHtml(c.rank||"E")}</span></div><label class="main-character-control"><input type="radio" name="mainCharacter" value="${attr(c.characterId)}" data-main-character ${isMain?"checked":""}>Make Main Character</label></div></article>`;
   }
 
   async function renderFriends() {
@@ -696,7 +702,7 @@
             </div>
           </div>
           <div class="font-preview" data-font-preview>
-            <img src="assets/default-player.png" alt="">
+            <img src="${attr(effectiveAvatar)}" alt="Current profile picture">
             <span><strong>MMOnsterpatch text preview</strong><small>Posts, menus, messages, and account pages use this size.</small></span>
           </div>
           <label class="preference-check"><span><strong>Dark mode</strong><small>Use the darker community appearance.</small></span><input type="checkbox" name="darkMode" ${prefs.themeMode==="dark"?"checked":""}></label>

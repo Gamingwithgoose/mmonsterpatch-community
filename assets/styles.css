@@ -638,3 +638,21 @@ img { max-width: 100%; }
   .public-profile-actions { width:100%; justify-content:flex-start; margin-left:0; }
   .public-profile-relationship-wrap .public-profile-menu { left:0; right:auto; }
 }
+
+/* v0.6.5 public-profile popup stacking fix
+   Relationship/profile action menus must escape the profile card and render above later sections. */
+.profile-card {
+  overflow: visible;
+  position: relative;
+}
+.profile-card .profile-cover {
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.public-profile-actions,
+.public-profile-relationship-wrap,
+.public-profile-menu-wrap {
+  z-index: 80;
+}
+.public-profile-menu {
+  z-index: 260 !important;
+}

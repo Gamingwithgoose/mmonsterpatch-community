@@ -424,7 +424,7 @@
         </div>
         <div class="post-menu-wrap"><button class="post-menu-button" type="button" aria-label="Post options" data-post-menu><span data-icon="more-horizontal"></span></button>
           <div class="context-menu hidden" data-post-context>
-            <button type="button" data-save-post="personal"><span data-icon="bookmark"></span><span>Save privately<span class="context-subtitle">Only you can see it</span></span></button>
+            <button type="button" data-save-post="personal"><span data-icon="bookmark"></span><span>Save<span class="context-subtitle">Only you can see it</span></span></button>
             ${canModerate() ? '<button type="button" data-save-post="global"><span data-icon="globe"></span><span>Save to Global<span class="context-subtitle">Add to community bookmarks</span></span></button>' : ""}
             <button type="button" data-hide-post><span data-icon="eye-off"></span><span>Hide post<span class="context-subtitle">Remove it from your feed</span></span></button>
             <button type="button" data-report-post><span data-icon="flag"></span><span>Report post<span class="context-subtitle">Send it to moderators</span></span></button>

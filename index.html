@@ -4,9 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#285b46">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=063">
+  <link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png?v=063">
+  <link rel="shortcut icon" href="/assets/favicon-64.png?v=063">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=063">
   <meta name="description" content="MMOnsterpatch player accounts, profiles, community posts, friends, characters and private messages.">
   <title>MMOnsterpatch Community</title>
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/styles.css">
   <link rel="stylesheet" href="assets/monsterpatch-ui.css">
   <script src="config.js" defer></script>
@@ -209,6 +212,19 @@
         <label>Reason<select name="reason" required><option value="">Choose a reason</option><option>Spam</option><option>Harassment</option><option>Hate or abuse</option><option>Scam or impersonation</option><option>Inappropriate content</option><option>Other</option></select></label>
         <label>Details<textarea name="details" maxlength="1000" placeholder="Add context for the moderation team"></textarea></label>
         <div class="form-error" data-report-error></div>
+        <footer><button class="secondary-button" type="button" data-modal-close>Cancel</button><button class="danger-button" type="submit">Submit Report</button></footer>
+      </form>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden" data-modal="user-report">
+    <section class="modal compact" role="dialog" aria-modal="true" aria-labelledby="user-report-modal-title">
+      <header><h2 id="user-report-modal-title" data-user-report-title>Report Player</h2><button type="button" class="icon-button" data-modal-close><span data-icon="x"></span></button></header>
+      <form data-user-report-form>
+        <p class="modal-help">This sends the account to MMOnsterpatch moderators for review.</p>
+        <label>Reason<select name="reason" required><option value="">Choose a reason</option><option>Harassment</option><option>Spam</option><option>Impersonation</option><option>Inappropriate profile</option><option>Other</option></select></label>
+        <label>Details<textarea name="details" maxlength="1000" placeholder="Add context for the moderation team"></textarea></label>
+        <div class="form-error" data-user-report-error></div>
         <footer><button class="secondary-button" type="button" data-modal-close>Cancel</button><button class="danger-button" type="submit">Submit Report</button></footer>
       </form>
     </section>

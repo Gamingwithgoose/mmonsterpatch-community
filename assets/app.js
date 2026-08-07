@@ -13,6 +13,8 @@
     notifications: [],
     activeThreadId: null,
     reportPostId: null,
+    reportUserAccountId: null,
+    reportUserName: null,
     repostPostId: null,
     selectedMedia: null,
     currentRoute: "feed",
@@ -33,6 +35,8 @@
     "home": '<svg class="icon" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>',
     "user": '<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
     "user-check": '<svg class="icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>',
+    "user-minus": '<svg class="icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M16 11h6"/></svg>',
+    "slash": '<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M6 6l12 12"/></svg>',
     "users": '<svg class="icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>',
     "message-circle": '<svg class="icon" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.5 9 9 0 0 1-4-.9L3 21l1.9-5a9 9 0 1 1 16.1-4.5Z"/></svg>',
     "search": '<svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>',
@@ -456,7 +460,7 @@
       <header class="post-head">
         ${profileAvatarLink(post.author || {},"avatar-small")}
         <div class="post-author">
-          <div class="post-author-line"><a class="profile-identity-link" href="${attr(profileHref(post.author || {}))}"><strong>${escapeHtml(post.author?.displayName || "Player")}</strong></a>${verified ? '<span class="verified-badge"><span data-icon="shield-check"></span>Verified Player</span>' : ""}${roleBadgeHtml(post.author?.role)}${verified && rank ? `<span class="rank-badge">Rank ${escapeHtml(rank)}</span>` : ""}</div>
+          <div class="post-author-line"><a class="profile-identity-link" href="${attr(profileHref(post.author || {}))}"><strong>${escapeHtml(post.author?.displayName || "Player")}</strong></a>${verified ? '<span class="verified-badge"><span data-icon="shield-check"></span>Verified</span>' : ""}${roleBadgeHtml(post.author?.role)}${verified && rank ? `<span class="rank-badge">Rank ${escapeHtml(rank)}</span>` : ""}</div>
           <div class="post-meta"><span>${formatDate(post.createdUtc)}</span><span>·</span><span data-icon="${post.visibility === "friends" ? "users" : "globe"}"></span>${isRepost ? '<span>· Reposted</span>' : ""}</div>
         </div>
         <div class="post-menu-wrap"><button class="post-menu-button" type="button" aria-label="Post options" data-post-menu><span data-icon="more-horizontal"></span></button>
@@ -493,7 +497,7 @@
 
   function reactionMemberHtml(reaction) {
     const member = reaction.member || {};
-    return `<a class="reaction-member reaction-member-link" href="${attr(profileHref(member))}">${avatarHtml(member,"avatar-small")}<span><strong>${escapeHtml(member.displayName || "Player")}</strong><small>${member.verifiedPlayer ? `Verified Player${member.rank ? ` · Rank ${escapeHtml(member.rank)}` : ""}` : "MMOnsterpatch account"}</small></span><span class="reaction-heart"><span data-icon="heart"></span></span></a>`;
+    return `<a class="reaction-member reaction-member-link" href="${attr(profileHref(member))}">${avatarHtml(member,"avatar-small")}<span><strong>${escapeHtml(member.displayName || "Player")}</strong><small>${member.verifiedPlayer ? `Verified${member.rank ? ` · Rank ${escapeHtml(member.rank)}` : ""}` : "MMOnsterpatch account"}</small></span><span class="reaction-heart"><span data-icon="heart"></span></span></a>`;
   }
 
   function updateCounter(card, type, value) {
@@ -633,7 +637,7 @@
       <div class="profile-cover"${coverStyle}></div>
       <div class="profile-main">
         ${avatarHtml({displayName:account.displayName,avatarUrl:profile.avatarUrl||main?.avatarUrl},"avatar-xl")}
-        <div class="profile-title"><h1>${escapeHtml(account.displayName||account.username)}</h1><div class="profile-badges">${profile.verifiedPlayer?'<span class="verified-badge"><span data-icon="shield-check"></span>Verified MMOnsterpatch Player</span>':""}${roleBadgeHtml(profile.role)}${main?`<span class="rank-badge">Rank ${escapeHtml(main.rank||"E")}</span>`:""}</div></div>
+        <div class="profile-title"><h1>${escapeHtml(account.displayName||account.username)}</h1><div class="profile-badges">${profile.verifiedPlayer?'<span class="verified-badge"><span data-icon="shield-check"></span>Verified</span>':""}${roleBadgeHtml(profile.role)}${main?`<span class="rank-badge">Rank ${escapeHtml(main.rank||"E")}</span>`:""}</div></div>
         <a class="secondary-button" href="#/settings"><span data-icon="edit"></span>Edit Profile</a>
       </div>
       <nav class="profile-tabs"><a class="active" href="#/profile">Posts</a><a href="#/characters">Characters</a><a href="#/friends">Friends</a></nav>
@@ -650,26 +654,165 @@
     const data = await api(`/community/profiles/${encodeURIComponent(accountId)}`);
     const member = data.member || {};
     const main = data.mainCharacter || null;
+    const relationship = String(data.relationship || "none").toLowerCase();
     const coverStyle = data.coverUrl ? ` style="background-image:linear-gradient(110deg,rgba(14,50,40,.22),rgba(10,30,44,.10)),url('${attr(data.coverUrl)}')"` : "";
     const identity = { ...member, avatarUrl: member.avatarUrl || main?.avatarUrl || "" };
     const handle = main?.publicHandle || member.publicHandle || "";
     const rank = main?.rank || member.rank || "";
     const guild = main?.guildName || member.guildName || "No Guild";
     const identityLine = handle ? `${escapeHtml(handle)}${rank ? ` · Rank ${escapeHtml(rank)}` : ""}` : "MMOnsterpatch player";
+    const targetId = member.accountId || accountId;
+    const isBlocked = relationship === "blocked" || relationship === "blocked_by";
+
+    let relationshipButton = "";
+    if (relationship === "friends") {
+      relationshipButton = `<button class="primary-button public-relationship-button" type="button" data-public-friends-menu aria-expanded="false">Friends <span class="friend-check" aria-hidden="true">✓</span></button>`;
+    } else if (relationship === "incoming") {
+      relationshipButton = `<button class="primary-button public-relationship-button" type="button" data-public-accept-friend>Accept Request</button>`;
+    } else if (relationship === "outgoing") {
+      relationshipButton = `<button class="secondary-button public-relationship-button" type="button" disabled>Request Sent</button>`;
+    } else if (relationship === "blocked") {
+      relationshipButton = `<button class="secondary-button public-relationship-button" type="button" data-public-unblock>Blocked</button>`;
+    } else if (relationship === "blocked_by") {
+      relationshipButton = `<button class="secondary-button public-relationship-button" type="button" disabled>Unavailable</button>`;
+    } else if (relationship !== "self") {
+      relationshipButton = `<button class="primary-button public-relationship-button" type="button" data-public-add-friend><span data-icon="plus"></span>Add Friend</button>`;
+    }
+
+    const friendsMenu = relationship === "friends" ? `
+      <div class="context-menu public-profile-menu hidden" data-public-friends-actions>
+        <button type="button" data-public-remove-friend><span data-icon="user-minus"></span>Remove friend</button>
+        <button type="button" data-public-block><span data-icon="slash"></span>Block</button>
+        <button type="button" data-public-report><span data-icon="flag"></span>Report</button>
+        <button type="button" data-public-actions-cancel><span data-icon="x"></span>Cancel</button>
+      </div>` : "";
+
+    const profileMenu = relationship !== "self" && relationship !== "friends" ? `
+      <div class="public-profile-menu-wrap">
+        <button class="icon-button" type="button" aria-label="More profile actions" data-public-profile-menu-toggle aria-expanded="false"><span data-icon="more-horizontal"></span></button>
+        <div class="context-menu public-profile-menu hidden" data-public-profile-actions>
+          ${relationship === "blocked"
+            ? '<button type="button" data-public-unblock><span data-icon="user-check"></span>Unblock</button>'
+            : relationship !== "blocked_by"
+              ? '<button type="button" data-public-block><span data-icon="slash"></span>Block</button>'
+              : ""}
+          <button type="button" data-public-report><span data-icon="flag"></span>Report</button>
+          <button type="button" data-public-actions-cancel><span data-icon="x"></span>Cancel</button>
+        </div>
+      </div>` : "";
+
     root.innerHTML = `<div class="page-head"><div><h1>Player Profile</h1><p>Public MMOnsterpatch Community profile.</p></div><a class="secondary-button" href="#/feed"><span data-icon="arrow-left"></span>Back to Feed</a></div>
       <section class="content-card profile-card">
         <div class="profile-cover"${coverStyle}></div>
         <div class="profile-main">
           ${avatarHtml(identity,"avatar-xl")}
-          <div class="profile-title"><h1>${escapeHtml(member.displayName || member.username || "Player")}</h1><div class="profile-badges">${member.verifiedPlayer?'<span class="verified-badge"><span data-icon="shield-check"></span>Verified MMOnsterpatch Player</span>':""}${roleBadgeHtml(member.role)}${rank?`<span class="rank-badge">Rank ${escapeHtml(rank)}</span>`:""}</div><small class="public-profile-identity">${identityLine}</small><small class="public-profile-identity">${escapeHtml(guild)}</small></div>
-          <button class="secondary-button" type="button" data-public-profile-message="${attr(member.accountId || accountId)}"><span data-icon="message-circle"></span>Message</button>
+          <div class="profile-title"><h1>${escapeHtml(member.displayName || member.username || "Player")}</h1><div class="profile-badges">${member.verifiedPlayer?'<span class="verified-badge"><span data-icon="shield-check"></span>Verified</span>':""}${roleBadgeHtml(member.role)}${rank?`<span class="rank-badge">Rank ${escapeHtml(rank)}</span>`:""}</div><small class="public-profile-identity">${identityLine}</small><small class="public-profile-identity">${escapeHtml(guild)}</small></div>
+          ${relationship !== "self" ? `<div class="public-profile-actions">
+            <div class="public-profile-relationship-wrap">${relationshipButton}${friendsMenu}</div>
+            ${!isBlocked ? `<button class="secondary-button" type="button" data-public-profile-message="${attr(targetId)}"><span data-icon="message-circle"></span>Message</button>` : ""}
+            ${profileMenu}
+          </div>` : ""}
         </div>
         <nav class="profile-tabs"><a class="active" href="#/profile/${encodeURIComponent(accountId)}">Posts</a></nav>
       </section>
       <section class="content-card section-card"><h2>About</h2><p>${data.bio?linkifyText(data.bio):'<span style="color:var(--muted)">No biography added yet.</span>'}</p></section>
       <section class="feed-stack" style="margin-top:12px" data-profile-posts></section>`;
     injectIcons(root);
+
+    const closeProfileMenus = () => {
+      root.querySelectorAll("[data-public-friends-actions],[data-public-profile-actions]").forEach(menu => menu.classList.add("hidden"));
+      root.querySelectorAll("[data-public-friends-menu],[data-public-profile-menu-toggle]").forEach(btn => btn.setAttribute("aria-expanded","false"));
+    };
+    const reloadProfile = async () => {
+      await loadFriends();
+      await renderPublicProfile(accountId);
+    };
+    const openUserReport = () => {
+      state.reportUserAccountId = targetId;
+      state.reportUserName = member.displayName || member.username || "player";
+      const form = document.querySelector("[data-user-report-form]");
+      if (form) {
+        form.reset();
+        form.querySelector("[data-user-report-error]").textContent = "";
+      }
+      const title = document.querySelector("[data-user-report-title]");
+      if (title) title.textContent = `Report ${state.reportUserName}`;
+      openModal("user-report");
+      closeProfileMenus();
+    };
+
     root.querySelector("[data-public-profile-message]")?.addEventListener("click", async event => { await startThread(event.currentTarget.dataset.publicProfileMessage); });
+
+    root.querySelector("[data-public-add-friend]")?.addEventListener("click", async () => {
+      try {
+        await api("/community/friends/request",{method:"POST",body:JSON.stringify({accountId:targetId})});
+        toast("Friend request sent.");
+        await reloadProfile();
+      } catch(ex) { toast(ex.message); }
+    });
+
+    root.querySelector("[data-public-accept-friend]")?.addEventListener("click", async () => {
+      try {
+        await api(`/community/friends/${encodeURIComponent(targetId)}/accept`,{method:"POST"});
+        toast("Friend request accepted.");
+        await reloadProfile();
+      } catch(ex) { toast(ex.message); }
+    });
+
+    root.querySelectorAll("[data-public-remove-friend]").forEach(btn => btn.addEventListener("click", async () => {
+      closeProfileMenus();
+      if (!confirm(`Remove ${member.displayName || "this player"} from your friends?`)) return;
+      try {
+        await api(`/community/friends/${encodeURIComponent(targetId)}`,{method:"DELETE"});
+        toast("Friend removed.");
+        await reloadProfile();
+      } catch(ex) { toast(ex.message); }
+    }));
+
+    root.querySelectorAll("[data-public-block]").forEach(btn => btn.addEventListener("click", async () => {
+      closeProfileMenus();
+      if (!confirm(`Block ${member.displayName || "this player"}? Blocking removes any friendship or pending request and prevents messaging or friend interactions.`)) return;
+      try {
+        await api(`/community/users/${encodeURIComponent(targetId)}/block`,{method:"POST"});
+        toast(`${member.displayName || "Player"} has been blocked.`);
+        await reloadProfile();
+      } catch(ex) { toast(ex.message); }
+    }));
+
+    root.querySelectorAll("[data-public-unblock]").forEach(btn => btn.addEventListener("click", async () => {
+      closeProfileMenus();
+      if (!confirm(`Unblock ${member.displayName || "this player"}?`)) return;
+      try {
+        await api(`/community/users/${encodeURIComponent(targetId)}/block`,{method:"DELETE"});
+        toast(`${member.displayName || "Player"} has been unblocked.`);
+        await reloadProfile();
+      } catch(ex) { toast(ex.message); }
+    }));
+
+    root.querySelectorAll("[data-public-report]").forEach(btn => btn.addEventListener("click", openUserReport));
+    root.querySelectorAll("[data-public-actions-cancel]").forEach(btn => btn.addEventListener("click", closeProfileMenus));
+
+    root.querySelector("[data-public-friends-menu]")?.addEventListener("click", event => {
+      event.stopPropagation();
+      const menu = root.querySelector("[data-public-friends-actions]");
+      const opening = menu?.classList.contains("hidden");
+      closeProfileMenus();
+      if (opening && menu) {
+        menu.classList.remove("hidden");
+        event.currentTarget.setAttribute("aria-expanded","true");
+      }
+    });
+    root.querySelector("[data-public-profile-menu-toggle]")?.addEventListener("click", event => {
+      event.stopPropagation();
+      const menu = root.querySelector("[data-public-profile-actions]");
+      const opening = menu?.classList.contains("hidden");
+      closeProfileMenus();
+      if (opening && menu) {
+        menu.classList.remove("hidden");
+        event.currentTarget.setAttribute("aria-expanded","true");
+      }
+    });
+
     const posts = await api(`/community/profiles/${encodeURIComponent(accountId)}/posts`);
     const target = root.querySelector("[data-profile-posts]");
     target.innerHTML = (posts.posts || []).length ? (posts.posts || []).map(postHtml).join("") : emptyPostsHtml();
@@ -699,7 +842,7 @@
     await loadFriends();
     const root=document.querySelector("#view-root");
     const incoming = state.incomingFriendRequests || [];
-    const requests = incoming.length ? `<section class="content-card section-card"><div class="section-heading"><h2>Friend Requests</h2><span>${incoming.length}</span></div><div class="member-grid compact-grid">${incoming.map(friend=>`<article class="member-card request-card">${profileAvatarLink(friend,"avatar-large")}<a class="profile-identity-link member-profile-copy" href="${attr(profileHref(friend))}"><span><strong>${escapeHtml(friend.displayName)}</strong><small>${friend.verifiedPlayer?`Verified Player${friend.rank?` · Rank ${escapeHtml(friend.rank)}`:""}`:"MMOnsterpatch account"}</small></span></a><div class="request-actions"><button class="primary-button" type="button" data-accept-friend="${attr(friend.accountId)}">Accept</button><button class="secondary-button" type="button" data-open-thread-user="${attr(friend.accountId)}">Message</button></div></article>`).join("")}</div></section>` : "";
+    const requests = incoming.length ? `<section class="content-card section-card"><div class="section-heading"><h2>Friend Requests</h2><span>${incoming.length}</span></div><div class="member-grid compact-grid">${incoming.map(friend=>`<article class="member-card request-card">${profileAvatarLink(friend,"avatar-large")}<a class="profile-identity-link member-profile-copy" href="${attr(profileHref(friend))}"><span><strong>${escapeHtml(friend.displayName)}</strong><small>${friend.verifiedPlayer?`Verified${friend.rank?` · Rank ${escapeHtml(friend.rank)}`:""}`:"MMOnsterpatch account"}</small></span></a><div class="request-actions"><button class="primary-button" type="button" data-accept-friend="${attr(friend.accountId)}">Accept</button><button class="secondary-button" type="button" data-open-thread-user="${attr(friend.accountId)}">Message</button></div></article>`).join("")}</div></section>` : "";
     root.innerHTML=`<div class="page-head"><div><h1>Friends</h1><p>Players you have connected with.</p></div><button class="primary-button" data-find-people><span data-icon="plus"></span>Find Players</button></div>
       ${requests}
       ${state.friends.length?`<div class="member-grid">${state.friends.map(friend=>`<article class="content-card member-card">${profileAvatarLink(friend,"avatar-large")}<a class="profile-identity-link member-profile-copy" href="${attr(profileHref(friend))}"><span><strong>${escapeHtml(friend.displayName)}</strong><small>${friend.mainCharacterName?`${escapeHtml(friend.mainCharacterName)} · Rank ${escapeHtml(friend.rank||"E")}`:"MMOnsterpatch account"}</small></span></a><div class="member-card-actions"><button type="button" aria-label="Message" data-open-thread-user="${attr(friend.accountId)}"><span data-icon="message-circle"></span></button></div></article>`).join("")}</div>`:`<section class="content-card empty-card"><div class="empty-icon" data-icon="users"></div><h2>No friends yet</h2><p>Use Find Players to connect with other MMOnsterpatch members.</p></section>`}`;
@@ -911,7 +1054,7 @@
           const summary=member.summary||{};
           const role=String(member.role||"user").toLowerCase();
           const roleControl=data.canManageRoles&&role!=="owner"?`<label class="role-control">Permission<select data-role-account="${attr(member.accountId)}"><option value="user" ${role==="user"?"selected":""}>User</option><option value="moderator" ${role==="moderator"?"selected":""}>Moderator</option></select></label>`:"";
-          return `<article class="moderation-user-card">${avatarHtml(summary,"avatar-large")}<div class="moderation-user-copy"><strong>${escapeHtml(member.displayName||member.username)}</strong><small>@${escapeHtml(member.username)} · ${escapeHtml(member.accountId)}</small>${member.email?`<small>${escapeHtml(member.email)}</small>`:""}<div class="profile-badges">${summary.verifiedPlayer?'<span class="verified-badge"><span data-icon="shield-check"></span>Verified Player</span>':""}${roleBadgeHtml(role)}${summary.rank?`<span class="rank-badge">Rank ${escapeHtml(summary.rank)}</span>`:""}</div></div><div class="moderation-user-actions">${roleControl}<button class="secondary-button small" type="button" data-moderation-message="${attr(member.accountId)}"><span data-icon="message-circle"></span>Message</button></div></article>`;
+          return `<article class="moderation-user-card">${avatarHtml(summary,"avatar-large")}<div class="moderation-user-copy"><strong>${escapeHtml(member.displayName||member.username)}</strong><small>@${escapeHtml(member.username)} · ${escapeHtml(member.accountId)}</small>${member.email?`<small>${escapeHtml(member.email)}</small>`:""}<div class="profile-badges">${summary.verifiedPlayer?'<span class="verified-badge"><span data-icon="shield-check"></span>Verified</span>':""}${roleBadgeHtml(role)}${summary.rank?`<span class="rank-badge">Rank ${escapeHtml(summary.rank)}</span>`:""}</div></div><div class="moderation-user-actions">${roleControl}<button class="secondary-button small" type="button" data-moderation-message="${attr(member.accountId)}"><span data-icon="message-circle"></span>Message</button></div></article>`;
         }).join(""):'<div class="empty-card"><p>No matching accounts found.</p></div>'}</div>
       </section>
       <section class="content-card moderation-section">
@@ -976,7 +1119,7 @@
 
     document.querySelector("[data-account-menu-toggle]")?.addEventListener("click",event=>{event.stopPropagation();const panel=document.querySelector("[data-account-menu]");const open=panel.classList.toggle("hidden");document.querySelector("[data-notification-panel]").classList.add("hidden");event.currentTarget.setAttribute("aria-expanded",String(!open));});
     document.querySelector("[data-notification-toggle]")?.addEventListener("click",event=>{event.stopPropagation();document.querySelector("[data-notification-panel]").classList.toggle("hidden");document.querySelector("[data-account-menu]").classList.add("hidden");});
-    document.addEventListener("click",event=>{if(!event.target.closest(".floating-panel")&&!event.target.closest("[data-account-menu-toggle]")&&!event.target.closest("[data-notification-toggle]"))closeFloatingPanels();document.querySelectorAll("[data-post-context]").forEach(menu=>{if(!event.target.closest(".post-menu-wrap"))menu.classList.add("hidden");});document.querySelectorAll("[data-share-menu]").forEach(menu=>{if(!event.target.closest(".share-action-wrap"))menu.classList.add("hidden");});});
+    document.addEventListener("click",event=>{if(!event.target.closest(".floating-panel")&&!event.target.closest("[data-account-menu-toggle]")&&!event.target.closest("[data-notification-toggle]"))closeFloatingPanels();document.querySelectorAll("[data-post-context]").forEach(menu=>{if(!event.target.closest(".post-menu-wrap"))menu.classList.add("hidden");});document.querySelectorAll("[data-share-menu]").forEach(menu=>{if(!event.target.closest(".share-action-wrap"))menu.classList.add("hidden");});document.querySelectorAll("[data-public-friends-actions],[data-public-profile-actions]").forEach(menu=>{if(!event.target.closest(".public-profile-relationship-wrap")&&!event.target.closest(".public-profile-menu-wrap"))menu.classList.add("hidden");});});
     document.querySelector("[data-logout]")?.addEventListener("click",()=>logout(true));
     document.querySelectorAll("[data-theme-open]").forEach(btn=>btn.addEventListener("click",()=>{renderThemePresets();openModal("theme");closeFloatingPanels();}));
     document.querySelectorAll("[data-dark-toggle]").forEach(toggle=>toggle.addEventListener("change",async()=>{const prefs={...(state.me.profile.preferences||{}),themeMode:toggle.checked?"dark":"light"};applyTheme(prefs);try{await savePreferences(prefs);}catch(ex){toast(ex.message);}}));
@@ -987,6 +1130,7 @@
     document.querySelector("[data-post-form]")?.addEventListener("submit",submitPost);
     document.querySelector("[data-repost-form]")?.addEventListener("submit",submitRepost);
     document.querySelector("[data-report-form]")?.addEventListener("submit",submitReport);
+    document.querySelector("[data-user-report-form]")?.addEventListener("submit",submitUserReport);
     document.querySelector("[data-theme-form]")?.addEventListener("submit",submitTheme);
     document.querySelector("[data-theme-reset]")?.addEventListener("click",()=>{const p=state.themePresets[0];document.querySelector("[data-theme-form] [name=primaryColor]").value=p.primary;document.querySelector("[data-theme-form] [name=accentColor]").value=p.accent;});
     document.querySelector("[data-mark-notifications]")?.addEventListener("click",async()=>{await api("/community/notifications/read-all",{method:"POST"});await loadNotifications();});
@@ -1030,6 +1174,26 @@
 
   async function submitReport(event) { event.preventDefault();const form=event.currentTarget,error=form.querySelector("[data-report-error]");error.textContent="";const data=new FormData(form);try{await api(`/community/posts/${encodeURIComponent(state.reportPostId)}/report`,{method:"POST",body:JSON.stringify({reason:data.get("reason"),details:data.get("details")})});form.reset();closeModal("report");toast("Report submitted to moderators.");}catch(ex){error.textContent=ex.message;} }
 
+  async function submitUserReport(event) {
+    event.preventDefault();
+    const form=event.currentTarget,error=form.querySelector("[data-user-report-error]");
+    error.textContent="";
+    const data=new FormData(form);
+    if(!state.reportUserAccountId){error.textContent="The player could not be identified.";return;}
+    if(!confirm(`Submit this report about ${state.reportUserName || "this player"} to moderators?`))return;
+    try{
+      await api(`/community/users/${encodeURIComponent(state.reportUserAccountId)}/report`,{
+        method:"POST",
+        body:JSON.stringify({reason:data.get("reason"),details:data.get("details")})
+      });
+      form.reset();
+      closeModal("user-report");
+      state.reportUserAccountId=null;
+      state.reportUserName=null;
+      toast("Report submitted to moderators.");
+    }catch(ex){error.textContent=ex.message;}
+  }
+
   function renderThemePresets() {
     const root=document.querySelector("[data-theme-presets]"),prefs=state.me.profile.preferences||{};
     root.innerHTML=state.themePresets.map(p=>`<button type="button" class="theme-preset ${prefs.themePreset===p.id?"active":""}" data-theme-preset="${p.id}"><div class="theme-swatch" style="background:linear-gradient(135deg,${p.primary},${p.accent})"></div><strong>${p.name}</strong></button>`).join("");
@@ -1055,7 +1219,7 @@
         else if(incomingIds.has(m.accountId)) friendshipButton=`<button type="button" class="primary-button small" data-accept-member="${attr(m.accountId)}">Accept Request</button>`;
         else if(outgoingIds.has(m.accountId)) friendshipButton='<span class="relationship-label">Request Sent</span>';
         else friendshipButton=`<button type="button" class="secondary-button small" data-add-member="${attr(m.accountId)}">Add Friend</button>`;
-        return `<div class="member-result">${profileAvatarLink(m,"avatar-small")}<a class="profile-identity-link member-result-copy" href="${attr(profileHref(m))}" data-member-profile-link><span><strong>${escapeHtml(m.displayName)}</strong><small>${m.verifiedPlayer?`Verified Player${m.rank?` · Rank ${escapeHtml(m.rank)}`:""}`:"MMOnsterpatch account"}</small></span></a><div class="member-result-actions">${friendshipButton}<button type="button" class="icon-button" aria-label="Message" data-message-member="${attr(m.accountId)}"><span data-icon="message-circle"></span></button></div></div>`;
+        return `<div class="member-result">${profileAvatarLink(m,"avatar-small")}<a class="profile-identity-link member-result-copy" href="${attr(profileHref(m))}" data-member-profile-link><span><strong>${escapeHtml(m.displayName)}</strong><small>${m.verifiedPlayer?`Verified${m.rank?` · Rank ${escapeHtml(m.rank)}`:""}`:"MMOnsterpatch account"}</small></span></a><div class="member-result-actions">${friendshipButton}<button type="button" class="icon-button" aria-label="Message" data-message-member="${attr(m.accountId)}"><span data-icon="message-circle"></span></button></div></div>`;
       }).join(""):'<div class="empty-card"><p>No players found.</p></div>';
       injectIcons(root);
       root.querySelectorAll("[data-member-profile-link], .profile-avatar-link").forEach(link=>link.addEventListener("click",()=>closeModal("new-message")));

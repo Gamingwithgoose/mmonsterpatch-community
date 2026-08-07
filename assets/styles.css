@@ -426,7 +426,6 @@ img { max-width: 100%; }
 .document-card h1 { margin-top: 8px; font: clamp(2rem,5vw,3.6rem) "DM Serif Display",serif; }
 .document-card h2 { margin: 30px 0 8px; font-size: 1.15rem; }
 .document-card p { line-height: 1.75; }
-.draft-notice { width: fit-content; padding: 8px 11px; border-radius: 9px; background: var(--accent-soft); border: 1px solid var(--accent); font-size: .8rem; font-weight: 800; }
 .legal-copy a { color: var(--primary); text-decoration: underline; }
 
 
@@ -623,3 +622,19 @@ img { max-width: 100%; }
 .message-row.mine .rich-text-link { color: inherit; }
 .member-profile-copy:hover strong, .member-result-copy:hover strong, .friend-row-profile:hover strong { text-decoration: underline; text-underline-offset: 2px; }
 .member-profile-copy:focus-visible, .member-result-copy:focus-visible, .friend-row-profile:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 6px; }
+
+
+/* v0.6.4 public-profile relationship parity */
+.public-profile-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; margin-left:auto; position:relative; }
+.public-profile-relationship-wrap,.public-profile-menu-wrap { position:relative; }
+.public-profile-actions .secondary-button { margin-left:0 !important; }
+.public-profile-actions .icon-button { border:1px solid var(--line); background:var(--surface-3); color:var(--text); }
+.public-profile-menu { top:calc(100% + 7px); right:0; min-width:210px; }
+.public-profile-relationship-wrap .public-profile-menu { left:0; right:auto; }
+.public-relationship-button { white-space:nowrap; }
+.friend-check { display:inline-block; margin-left:6px; font-size:1em; line-height:1; font-weight:1000; }
+.modal-help { margin:0 0 12px; color:var(--muted); font-size:.82rem; line-height:1.5; }
+@media (max-width:700px) {
+  .public-profile-actions { width:100%; justify-content:flex-start; margin-left:0; }
+  .public-profile-relationship-wrap .public-profile-menu { left:0; right:auto; }
+}

@@ -142,6 +142,17 @@
     return `<span class="avatar ${classes} ${gameSprite ? "game-avatar" : ""}">${url ? `<img src="${attr(url)}" alt="${attr(name)}">` : `<img class="avatar-fallback" src="assets/default-player.png" alt="${attr(name)}">`}</span>`;
   }
 
+
+  function profileHref(person) {
+    const accountId = String(person?.accountId || "").trim();
+    if (!accountId || accountId === String(state.me?.account?.accountId || "")) return "#/profile";
+    return `#/profile/${encodeURIComponent(accountId)}`;
+  }
+
+  function profileAvatarLink(person, classes = "") {
+    return `<a class="profile-identity-link profile-avatar-link" href="${attr(profileHref(person))}" aria-label="View ${attr(person?.displayName || "player")} profile">${avatarHtml(person, classes)}</a>`;
+  }
+
   function currentMainCharacter() {
     const id = state.me?.profile?.mainCharacterId;
     return state.characters.find(c => c.characterId === id) || null;
@@ -398,7 +409,7 @@
   function embeddedPostHtml(original) {
     if (!original) return `<div class="embedded-post unavailable"><strong>Post unavailable</strong><p>The original post was removed or is no longer visible to you.</p></div>`;
     return `<div class="embedded-post">
-      <a class="embedded-post-head" href="#/post/${encodeURIComponent(original.postId)}?panel=comments">${avatarHtml(original.author || {},"avatar-tiny")}<span><strong>${escapeHtml(original.author?.displayName || "Player")}</strong><small>${formatDate(original.createdUtc)}</small></span></a>
+      <div class="embedded-post-head">${profileAvatarLink(original.author || {},"avatar-tiny")}<span><a class="profile-identity-link" href="${attr(profileHref(original.author || {}))}"><strong>${escapeHtml(original.author?.displayName || "Player")}</strong></a><a class="embedded-post-date" href="#/post/${encodeURIComponent(original.postId)}?panel=comments"><small>${formatDate(original.createdUtc)}</small></a></span></div>
       ${original.body ? `<div class="embedded-post-body">${escapeHtml(original.body)}</div>` : ""}
       ${original.mediaUrl ? mediaHtml(original.mediaUrl,"Original post image","embedded") : ""}
     </div>`;
@@ -417,9 +428,9 @@
     const isRepost = Boolean(post.repostOfPostId);
     return `<article class="post-card ${detail ? "post-card-detail" : ""}" data-post-id="${attr(post.postId)}">
       <header class="post-head">
-        ${avatarHtml(post.author || {},"avatar-small")}
+        ${profileAvatarLink(post.author || {},"avatar-small")}
         <div class="post-author">
-          <div class="post-author-line"><strong>${escapeHtml(post.author?.displayName || "Player")}</strong>${verified ? '<span class="verified-badge"><span data-icon="shield-check"></span>Verified Player</span>' : ""}${roleBadgeHtml(post.author?.role)}${verified && rank ? `<span class="rank-badge">Rank ${escapeHtml(rank)}</span>` : ""}</div>
+          <div class="post-author-line"><a class="profile-identity-link" href="${attr(profileHref(post.author || {}))}"><strong>${escapeHtml(post.author?.displayName || "Player")}</strong></a>${verified ? '<span class="verified-badge"><span data-icon="shield-check"></span>Verified Player</span>' : ""}${roleBadgeHtml(post.author?.role)}${verified && rank ? `<span class="rank-badge">Rank ${escapeHtml(rank)}</span>` : ""}</div>
           <div class="post-meta"><span>${formatDate(post.createdUtc)}</span><span>·</span><span data-icon="${post.visibility === "friends" ? "users" : "globe"}"></span>${isRepost ? '<span>· Reposted</span>' : ""}</div>
         </div>
         <div class="post-menu-wrap"><button class="post-menu-button" type="button" aria-label="Post options" data-post-menu><span data-icon="more-horizontal"></span></button>
@@ -450,12 +461,13 @@
   }
 
   function commentHtml(comment) {
-    return `<div class="comment-row" data-comment-id="${attr(comment.commentId || "")}">${avatarHtml(comment.author || {},"avatar-small")}<div class="comment-bubble"><strong>${escapeHtml(comment.author?.displayName || "Player")}</strong><p>${escapeHtml(comment.body)}</p><small>${formatDate(comment.createdUtc)}</small></div></div>`;
+    const author = comment.author || {};
+    return `<div class="comment-row" data-comment-id="${attr(comment.commentId || "")}">${profileAvatarLink(author,"avatar-small")}<div class="comment-bubble"><a class="profile-identity-link" href="${attr(profileHref(author))}"><strong>${escapeHtml(author.displayName || "Player")}</strong></a><p>${escapeHtml(comment.body)}</p><small>${formatDate(comment.createdUtc)}</small></div></div>`;
   }
 
   function reactionMemberHtml(reaction) {
     const member = reaction.member || {};
-    return `<div class="reaction-member">${avatarHtml(member,"avatar-small")}<span><strong>${escapeHtml(member.displayName || "Player")}</strong><small>${member.verifiedPlayer ? `Verified Player${member.rank ? ` · Rank ${escapeHtml(member.rank)}` : ""}` : "MMOnsterpatch account"}</small></span><span class="reaction-heart"><span data-icon="heart"></span></span></div>`;
+    return `<a class="reaction-member reaction-member-link" href="${attr(profileHref(member))}">${avatarHtml(member,"avatar-small")}<span><strong>${escapeHtml(member.displayName || "Player")}</strong><small>${member.verifiedPlayer ? `Verified Player${member.rank ? ` · Rank ${escapeHtml(member.rank)}` : ""}` : "MMOnsterpatch account"}</small></span><span class="reaction-heart"><span data-icon="heart"></span></span></a>`;
   }
 
   function updateCounter(card, type, value) {
@@ -576,7 +588,18 @@
     });
   }
 
+  function profileRouteAccountId() {
+    const raw = location.hash.replace(/^#\/?/, "").split("?")[0];
+    const parts = raw.split("/");
+    return decodeURIComponent(parts[1] || "");
+  }
+
   async function renderProfile() {
+    const accountId = profileRouteAccountId();
+    if (accountId && accountId !== String(state.me?.account?.accountId || "")) {
+      await renderPublicProfile(accountId);
+      return;
+    }
     await loadMe();
     const root=document.querySelector("#view-root"), profile=state.me.profile||{}, account=state.me.account||{}, main=currentMainCharacter();
     const coverStyle=profile.coverUrl?` style="background-image:linear-gradient(110deg,rgba(14,50,40,.22),rgba(10,30,44,.10)),url('${attr(profile.coverUrl)}')"`:"";
@@ -594,6 +617,37 @@
     injectIcons(root);
     const data=await api(`/community/profiles/${encodeURIComponent(account.accountId)}/posts`);
     const target=root.querySelector("[data-profile-posts]"); target.innerHTML=(data.posts||[]).length?(data.posts||[]).map(postHtml).join(""):emptyPostsHtml(); bindPosts(target);
+  }
+
+  async function renderPublicProfile(accountId) {
+    const root = document.querySelector("#view-root");
+    const data = await api(`/community/profiles/${encodeURIComponent(accountId)}`);
+    const member = data.member || {};
+    const main = data.mainCharacter || null;
+    const coverStyle = data.coverUrl ? ` style="background-image:linear-gradient(110deg,rgba(14,50,40,.22),rgba(10,30,44,.10)),url('${attr(data.coverUrl)}')"` : "";
+    const identity = { ...member, avatarUrl: member.avatarUrl || main?.avatarUrl || "" };
+    const handle = main?.publicHandle || member.publicHandle || "";
+    const rank = main?.rank || member.rank || "";
+    const guild = main?.guildName || member.guildName || "No Guild";
+    const identityLine = handle ? `${escapeHtml(handle)}${rank ? ` · Rank ${escapeHtml(rank)}` : ""}` : "MMOnsterpatch player";
+    root.innerHTML = `<div class="page-head"><div><h1>Player Profile</h1><p>Public MMOnsterpatch Community profile.</p></div><a class="secondary-button" href="#/feed"><span data-icon="arrow-left"></span>Back to Feed</a></div>
+      <section class="content-card profile-card">
+        <div class="profile-cover"${coverStyle}></div>
+        <div class="profile-main">
+          ${avatarHtml(identity,"avatar-xl")}
+          <div class="profile-title"><h1>${escapeHtml(member.displayName || member.username || "Player")}</h1><div class="profile-badges">${member.verifiedPlayer?'<span class="verified-badge"><span data-icon="shield-check"></span>Verified MMOnsterpatch Player</span>':""}${roleBadgeHtml(member.role)}${rank?`<span class="rank-badge">Rank ${escapeHtml(rank)}</span>`:""}</div><small class="public-profile-identity">${identityLine}</small><small class="public-profile-identity">${escapeHtml(guild)}</small></div>
+          <button class="secondary-button" type="button" data-public-profile-message="${attr(member.accountId || accountId)}"><span data-icon="message-circle"></span>Message</button>
+        </div>
+        <nav class="profile-tabs"><a class="active" href="#/profile/${encodeURIComponent(accountId)}">Posts</a></nav>
+      </section>
+      <section class="content-card section-card"><h2>About</h2><p>${data.bio?escapeHtml(data.bio):'<span style="color:var(--muted)">No biography added yet.</span>'}</p></section>
+      <section class="feed-stack" style="margin-top:12px" data-profile-posts></section>`;
+    injectIcons(root);
+    root.querySelector("[data-public-profile-message]")?.addEventListener("click", async event => { await startThread(event.currentTarget.dataset.publicProfileMessage); });
+    const posts = await api(`/community/profiles/${encodeURIComponent(accountId)}/posts`);
+    const target = root.querySelector("[data-profile-posts]");
+    target.innerHTML = (posts.posts || []).length ? (posts.posts || []).map(postHtml).join("") : emptyPostsHtml();
+    bindPosts(target);
   }
 
   async function renderCharacters() {

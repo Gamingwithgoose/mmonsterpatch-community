@@ -115,6 +115,7 @@
         </a>
         <div class="menu-divider"></div>
         <a href="#/settings" role="menuitem"><span data-icon="settings"></span>Preferences &amp; account</a>
+        <a href="#/moderation" class="hidden" data-moderation-menu role="menuitem"><span data-icon="shield"></span>Moderation tools</a>
         <button type="button" data-theme-open role="menuitem"><span data-icon="palette"></span>Themes</button>
         <label class="menu-toggle-row"><span><span data-icon="moon"></span>Dark mode</span><input type="checkbox" data-dark-toggle><i></i></label>
         <div class="menu-divider"></div>
@@ -131,13 +132,18 @@
           </a>
         </section>
         <nav class="sidebar-card side-nav" aria-label="Community navigation">
-          <a href="#/feed" data-route-link="feed"><span class="nav-icon" data-icon="home"></span><span>Home Feed</span></a>
+          <a href="#/feed" data-route-link="feed"><span class="nav-icon" data-icon="home"></span><span>Feed</span></a>
           <a href="#/profile" data-route-link="profile"><span class="nav-icon" data-icon="user"></span><span>Profile</span></a>
           <a href="#/messages" data-route-link="messages"><span class="nav-icon" data-icon="message-circle"></span><span>Messages</span></a>
           <a href="#/friends" data-route-link="friends"><span class="nav-icon" data-icon="users"></span><span>Friends</span></a>
           <a href="#/characters" data-route-link="characters"><span class="nav-icon" data-icon="sparkles"></span><span>Characters</span></a>
           <a href="#/saved" data-route-link="saved"><span class="nav-icon" data-icon="bookmark"></span><span>Saved</span></a>
         </nav>
+        <section class="sidebar-card sidebar-message-panel hidden" data-sidebar-message-panel>
+          <div class="sidebar-message-head"><strong>Messages</strong><button class="icon-button" type="button" data-sidebar-new-message aria-label="New message"><span data-icon="edit"></span></button></div>
+          <label class="thread-search sidebar-thread-search"><span data-icon="search"></span><input type="search" placeholder="Search messages" data-sidebar-thread-filter></label>
+          <div class="thread-list sidebar-thread-list" data-sidebar-thread-list></div>
+        </section>
       </aside>
 
       <main class="main-content" id="view-root" tabindex="-1"></main>
@@ -168,12 +174,31 @@
       <form data-post-form>
         <div class="composer-author"><span class="avatar" data-current-avatar></span><strong data-current-name>Player</strong></div>
         <label class="audience-selector">Audience<select name="visibility"><option value="global">Public community</option><option value="friends">Friends only</option></select></label>
-        <textarea name="body" maxlength="5000" placeholder="What's happening in MMOnsterpatch?" required></textarea>
+        <textarea name="body" maxlength="5000" placeholder="What's happening in MMOnsterpatch?"></textarea>
         <div class="media-preview hidden" data-media-preview></div>
         <label class="attachment-button"><span data-icon="image"></span>Add photo<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-post-image></label>
         <div class="form-error" data-post-error></div>
         <footer><button class="secondary-button" type="button" data-modal-close>Cancel</button><button class="primary-button" type="submit">Post</button></footer>
       </form>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden" data-modal="repost">
+    <section class="modal compact" role="dialog" aria-modal="true" aria-labelledby="repost-modal-title">
+      <header><h2 id="repost-modal-title">Repost to Your Feed</h2><button type="button" class="icon-button" data-modal-close><span data-icon="x"></span></button></header>
+      <form data-repost-form>
+        <label>Add your thoughts (optional)<textarea name="body" maxlength="5000" placeholder="Say something about this post…"></textarea></label>
+        <label>Audience<select name="visibility"><option value="global">Public community</option><option value="friends">Friends only</option></select></label>
+        <div class="form-error" data-repost-error></div>
+        <footer><button class="secondary-button" type="button" data-modal-close>Cancel</button><button class="primary-button" type="submit"><span data-icon="repeat"></span>Repost</button></footer>
+      </form>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden image-lightbox-backdrop" data-modal="image">
+    <section class="image-lightbox" role="dialog" aria-modal="true" aria-label="Full-size image viewer">
+      <header><a class="secondary-button" target="_blank" rel="noopener" data-lightbox-original><span data-icon="external-link"></span>Open original</a><button type="button" class="icon-button" aria-label="Close image viewer" data-modal-close><span data-icon="x"></span></button></header>
+      <div class="image-lightbox-stage"><img data-lightbox-image alt="Full-size post image"></div>
     </section>
   </div>
 

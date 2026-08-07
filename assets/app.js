@@ -13,6 +13,7 @@
     notifications: [],
     activeThreadId: null,
     reportPostId: null,
+    repostPostId: null,
     selectedMedia: null,
     currentRoute: "feed",
     themePresets: [
@@ -46,6 +47,9 @@
     "more-horizontal": '<svg class="icon" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>',
     "heart": '<svg class="icon" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>',
     "share": '<svg class="icon" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg>',
+    "repeat": '<svg class="icon" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="m7 22-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>',
+    "link": '<svg class="icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg>',
+    "external-link": '<svg class="icon" viewBox="0 0 24 24"><path d="M15 3h6v6M10 14 21 3"/><path d="M18 13v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h7"/></svg>',
     "send": '<svg class="icon" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>',
     "image": '<svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>',
     "x": '<svg class="icon" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>',
@@ -57,6 +61,9 @@
     "arrow-left": '<svg class="icon" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>',
     "refresh": '<svg class="icon" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7L20 14"/><path d="M20 8v6h-6"/></svg>',
     "shield-check": '<svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>',
+    "shield": '<svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>',
+    "crown": '<svg class="icon" viewBox="0 0 24 24"><path d="m3 7 4 4 5-7 5 7 4-4-2 11H5Z"/><path d="M5 21h14"/></svg>',
+    "sword": '<svg class="icon" viewBox="0 0 24 24"><path d="m14 4 6-2-2 6L8 18l-4 2 2-4Z"/><path d="m10 16 4 4M6 18l-2 2"/></svg>',
     "globe": '<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>',
     "lock": '<svg class="icon" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
     "edit": '<svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>'
@@ -131,12 +138,28 @@
   function avatarHtml(person, classes = "") {
     const name = person?.displayName || person?.name || person?.username || "Player";
     const url = person?.avatarUrl || person?.avatar_url || "";
-    return `<span class="avatar ${classes}">${url ? `<img src="${attr(url)}" alt="${attr(name)}">` : `<img class="avatar-fallback" src="assets/default-player.png" alt="${attr(name)}">`}</span>`;
+    const gameSprite = /\/community-character-assets\//i.test(url);
+    return `<span class="avatar ${classes} ${gameSprite ? "game-avatar" : ""}">${url ? `<img src="${attr(url)}" alt="${attr(name)}">` : `<img class="avatar-fallback" src="assets/default-player.png" alt="${attr(name)}">`}</span>`;
   }
 
   function currentMainCharacter() {
     const id = state.me?.profile?.mainCharacterId;
     return state.characters.find(c => c.characterId === id) || null;
+  }
+
+  function currentRole() {
+    const role = String(state.me?.profile?.role || "user").toLowerCase();
+    return role === "owner" || role === "moderator" ? role : "user";
+  }
+
+  function canModerate() { return Boolean(state.me?.profile?.canModerate || currentRole() !== "user"); }
+  function canManageRoles() { return Boolean(state.me?.profile?.canManageRoles || currentRole() === "owner"); }
+
+  function roleBadgeHtml(roleValue) {
+    const role = String(roleValue || "user").toLowerCase();
+    if (role === "owner") return '<span class="permission-badge owner"><span data-icon="crown"></span>Owner</span>';
+    if (role === "moderator") return '<span class="permission-badge moderator"><span data-icon="sword"></span>Moderator</span>';
+    return '<span class="permission-badge user"><span data-icon="user"></span>User</span>';
   }
 
   function applyTheme(preferences = {}) {
@@ -178,8 +201,11 @@
     document.querySelectorAll("[data-current-name]").forEach(el => el.textContent = user.displayName || user.username || "Player");
     document.querySelectorAll("[data-current-rank]").forEach(el => el.textContent = main ? `Main Character · Rank ${main.rank || "E"}` : (profile.verifiedPlayer ? "Choose a main character" : "No linked character yet"));
     document.querySelectorAll("[data-current-avatar]").forEach(el => {
+      const gameSprite = /\/community-character-assets\//i.test(avatarUrl);
+      el.classList.toggle("game-avatar", gameSprite);
       el.innerHTML = avatarUrl ? `<img src="${attr(avatarUrl)}" alt="">` : `<img class="avatar-fallback" src="assets/default-player.png" alt="">`;
     });
+    document.querySelectorAll("[data-moderation-menu]").forEach(el => el.classList.toggle("hidden", !canModerate()));
     applyTheme(profile.preferences || {});
   }
 
@@ -285,6 +311,7 @@
     state.currentRoute = route;
     setActiveNav(route);
     closeFloatingPanels();
+    document.querySelector("[data-sidebar-message-panel]")?.classList.toggle("hidden", route !== "messages");
     const root = document.querySelector("#view-root");
     root.innerHTML = '<section class="content-card loading-card">Loading…</section>';
     try {
@@ -295,6 +322,7 @@
         case "messages": await renderMessages(); break;
         case "saved": await renderSaved(); break;
         case "settings": await renderSettings(); break;
+        case "moderation": await renderModeration(); break;
         case "post": await renderSinglePost(); break;
         default: await renderFeed(); break;
       }
@@ -328,63 +356,158 @@
     bindPosts(root);
   }
 
+  function postHashParts() {
+    const raw = location.hash.replace(/^#\/?/, "");
+    const [path, query = ""] = raw.split("?");
+    const parts = path.split("/");
+    return { postId: decodeURIComponent(parts[1] || ""), panel: new URLSearchParams(query).get("panel") || "comments" };
+  }
+
   async function renderSinglePost() {
     const root = document.querySelector("#view-root");
-    const postId = location.hash.replace(/^#\/post\//, "").split(/[?]/)[0];
-    if (!postId || postId === location.hash) throw new Error("Post link is invalid.");
+    const { postId, panel } = postHashParts();
+    if (!postId) throw new Error("Post link is invalid.");
     const data = await api(`/community/posts/${encodeURIComponent(postId)}`);
-    root.innerHTML = `<div class="page-head"><div><h1>Post</h1><p>Shared from the MMOnsterpatch community.</p></div><a class="secondary-button" href="#/feed"><span data-icon="arrow-left"></span>Back to Feed</a></div><div class="feed-stack">${postHtml(data.post)}</div>`;
+    let detailPanel = "";
+    if (panel === "reactions") {
+      const reactionData = await api(`/community/posts/${encodeURIComponent(postId)}/reactions`);
+      const reactions = reactionData.reactions || [];
+      detailPanel = `<section class="content-card post-detail-panel reaction-detail-panel">
+        <div class="post-detail-panel-head"><h2>Reactions</h2><span>${Number(reactionData.reactionCount || 0)}</span></div>
+        <div class="reaction-member-list">${reactions.length ? reactions.map(reactionMemberHtml).join("") : '<div class="empty-card"><p>No reactions yet.</p></div>'}</div>
+      </section>`;
+    }
+    root.innerHTML = `<div class="page-head"><div><h1>Post</h1><p>View the conversation and everyone who reacted.</p></div><a class="secondary-button" href="#/feed"><span data-icon="arrow-left"></span>Back to Feed</a></div>
+      <nav class="post-detail-tabs"><a class="${panel !== "reactions" ? "active" : ""}" href="#/post/${encodeURIComponent(postId)}?panel=comments">Comments (${Number(data.post.commentCount || 0)})</a><a class="${panel === "reactions" ? "active" : ""}" href="#/post/${encodeURIComponent(postId)}?panel=reactions">Reactions (${Number(data.post.reactionCount || 0)})</a></nav>
+      <div class="feed-stack">${postHtml(data.post,{ detail:true, showComments:panel !== "reactions" })}${detailPanel}</div>`;
     injectIcons(root);
     bindPosts(root);
+    classifyPostImages(root);
   }
 
   function emptyPostsHtml() {
     return `<section class="content-card empty-card"><div class="empty-icon" data-icon="message-circle"></div><h2>No posts yet</h2><p>The community feed is empty. Be the first player to post.</p></section>`;
   }
 
-  function postHtml(post) {
-    const mine = post.author?.accountId === state.me.account.accountId;
+  function embeddedPostHtml(original) {
+    if (!original) return `<div class="embedded-post unavailable"><strong>Post unavailable</strong><p>The original post was removed or is no longer visible to you.</p></div>`;
+    return `<div class="embedded-post">
+      <a class="embedded-post-head" href="#/post/${encodeURIComponent(original.postId)}?panel=comments">${avatarHtml(original.author || {},"avatar-tiny")}<span><strong>${escapeHtml(original.author?.displayName || "Player")}</strong><small>${formatDate(original.createdUtc)}</small></span></a>
+      ${original.body ? `<div class="embedded-post-body">${escapeHtml(original.body)}</div>` : ""}
+      ${original.mediaUrl ? mediaHtml(original.mediaUrl,"Original post image","embedded") : ""}
+    </div>`;
+  }
+
+  function mediaHtml(url, altText = "Post image", extraClass = "") {
+    return `<button class="post-media-button ${extraClass}" type="button" data-open-media="${attr(url)}" aria-label="View image at full size"><img class="post-media" src="${attr(url)}" alt="${attr(altText)}" loading="lazy"></button>`;
+  }
+
+  function postHtml(post, options = {}) {
     const verified = Boolean(post.author?.verifiedPlayer);
     const rank = post.author?.rank;
     const comments = post.comments || [];
-    return `<article class="post-card" data-post-id="${attr(post.postId)}">
+    const detail = Boolean(options.detail);
+    const showComments = options.showComments !== false;
+    const isRepost = Boolean(post.repostOfPostId);
+    return `<article class="post-card ${detail ? "post-card-detail" : ""}" data-post-id="${attr(post.postId)}">
       <header class="post-head">
         ${avatarHtml(post.author || {},"avatar-small")}
         <div class="post-author">
-          <div class="post-author-line"><strong>${escapeHtml(post.author?.displayName || "Player")}</strong>${verified ? '<span class="verified-badge"><span data-icon="shield-check"></span>Verified Player</span>' : ""}${verified && rank ? `<span class="rank-badge">Rank ${escapeHtml(rank)}</span>` : ""}</div>
-          <div class="post-meta"><span>${formatDate(post.createdUtc)}</span><span>·</span><span data-icon="${post.visibility === "friends" ? "users" : "globe"}"></span></div>
+          <div class="post-author-line"><strong>${escapeHtml(post.author?.displayName || "Player")}</strong>${verified ? '<span class="verified-badge"><span data-icon="shield-check"></span>Verified Player</span>' : ""}${roleBadgeHtml(post.author?.role)}${verified && rank ? `<span class="rank-badge">Rank ${escapeHtml(rank)}</span>` : ""}</div>
+          <div class="post-meta"><span>${formatDate(post.createdUtc)}</span><span>·</span><span data-icon="${post.visibility === "friends" ? "users" : "globe"}"></span>${isRepost ? '<span>· Reposted</span>' : ""}</div>
         </div>
         <div class="post-menu-wrap"><button class="post-menu-button" type="button" aria-label="Post options" data-post-menu><span data-icon="more-horizontal"></span></button>
           <div class="context-menu hidden" data-post-context>
             <button type="button" data-save-post="personal"><span data-icon="bookmark"></span><span>Save privately<span class="context-subtitle">Only you can see it</span></span></button>
-            <button type="button" data-save-post="global"><span data-icon="globe"></span><span>Save to Global<span class="context-subtitle">Add to community bookmarks</span></span></button>
+            ${canModerate() ? '<button type="button" data-save-post="global"><span data-icon="globe"></span><span>Save to Global<span class="context-subtitle">Add to community bookmarks</span></span></button>' : ""}
             <button type="button" data-hide-post><span data-icon="eye-off"></span><span>Hide post<span class="context-subtitle">Remove it from your feed</span></span></button>
             <button type="button" data-report-post><span data-icon="flag"></span><span>Report post<span class="context-subtitle">Send it to moderators</span></span></button>
-            ${mine ? '<button type="button" class="danger" data-delete-post><span data-icon="trash"></span><span>Delete post</span></button>' : ""}
+            ${post.canDelete ? '<button type="button" class="danger" data-delete-post><span data-icon="trash"></span><span>Delete post</span></button>' : ""}
           </div>
         </div>
       </header>
-      <div class="post-body">${escapeHtml(post.body)}</div>
-      ${post.mediaUrl ? `<img class="post-media" src="${attr(post.mediaUrl)}" alt="Post image" loading="lazy">` : ""}
-      <div class="post-summary"><span>${Number(post.reactionCount || 0)} ${Number(post.reactionCount || 0) === 1 ? "reaction" : "reactions"}</span><span>${Number(post.commentCount || comments.length || 0)} ${Number(post.commentCount || comments.length || 0) === 1 ? "comment" : "comments"}</span></div>
+      ${post.body ? `<div class="post-body">${escapeHtml(post.body)}</div>` : ""}
+      ${isRepost ? embeddedPostHtml(post.originalPost) : ""}
+      ${post.mediaUrl ? mediaHtml(post.mediaUrl) : ""}
+      <div class="post-summary"><button type="button" class="summary-link" data-open-reactions><span data-reaction-count>${Number(post.reactionCount || 0)}</span> <span data-reaction-word>${Number(post.reactionCount || 0) === 1 ? "reaction" : "reactions"}</span></button><button type="button" class="summary-link" data-open-comments><span data-comment-count>${Number(post.commentCount || 0)}</span> <span data-comment-word>${Number(post.commentCount || 0) === 1 ? "comment" : "comments"}</span></button></div>
       <div class="post-actions">
-        <button type="button" class="${post.reacted ? "active" : ""}" data-react><span data-icon="heart"></span>${post.reacted ? "Liked" : "Like"}</button>
+        <button type="button" class="${post.reacted ? "active" : ""}" data-react data-reacted="${post.reacted ? "true" : "false"}" aria-pressed="${post.reacted ? "true" : "false"}"><span data-icon="heart"></span><span data-react-label>${post.reacted ? "Liked" : "Like"}</span></button>
         <button type="button" data-comment-toggle><span data-icon="message-circle"></span>Comment</button>
-        <button type="button" data-share><span data-icon="share"></span>Share</button>
+        <div class="share-action-wrap"><button type="button" data-share-toggle><span data-icon="share"></span>Share</button><div class="share-menu hidden" data-share-menu><button type="button" data-repost-open><span data-icon="repeat"></span>Repost</button><button type="button" data-copy-link><span data-icon="link"></span>Copy link</button><button type="button" data-native-share><span data-icon="share"></span>Share via…</button></div></div>
       </div>
-      <div class="comment-area ${comments.length ? "" : "hidden"}" data-comment-area>
+      ${showComments ? `<div class="comment-area ${detail ? "detail-comments" : ""} ${detail || comments.length ? "" : "hidden"}" data-comment-area>
+        ${!detail && Number(post.commentCount || 0) > comments.length ? `<button type="button" class="view-more-comments" data-open-comments>View all ${Number(post.commentCount || 0)} comments</button>` : ""}
         <div class="comment-list">${comments.map(commentHtml).join("")}</div>
         <form class="comment-form" data-comment-form><input name="body" maxlength="1200" placeholder="Write a comment…" required><button type="submit" aria-label="Send comment"><span data-icon="send"></span></button></form>
-      </div>
+      </div>` : ""}
     </article>`;
   }
 
   function commentHtml(comment) {
-    return `<div class="comment-row">${avatarHtml(comment.author || {},"avatar-small")}<div class="comment-bubble"><strong>${escapeHtml(comment.author?.displayName || "Player")}</strong><p>${escapeHtml(comment.body)}</p></div></div>`;
+    return `<div class="comment-row" data-comment-id="${attr(comment.commentId || "")}">${avatarHtml(comment.author || {},"avatar-small")}<div class="comment-bubble"><strong>${escapeHtml(comment.author?.displayName || "Player")}</strong><p>${escapeHtml(comment.body)}</p><small>${formatDate(comment.createdUtc)}</small></div></div>`;
+  }
+
+  function reactionMemberHtml(reaction) {
+    const member = reaction.member || {};
+    return `<div class="reaction-member">${avatarHtml(member,"avatar-small")}<span><strong>${escapeHtml(member.displayName || "Player")}</strong><small>${member.verifiedPlayer ? `Verified Player${member.rank ? ` · Rank ${escapeHtml(member.rank)}` : ""}` : "MMOnsterpatch account"}</small></span><span class="reaction-heart"><span data-icon="heart"></span></span></div>`;
+  }
+
+  function updateCounter(card, type, value) {
+    const count = Number(value || 0);
+    const countEl = card.querySelector(`[data-${type}-count]`);
+    const wordEl = card.querySelector(`[data-${type}-word]`);
+    if (countEl) countEl.textContent = String(count);
+    if (wordEl) wordEl.textContent = type === "reaction" ? (count === 1 ? "reaction" : "reactions") : (count === 1 ? "comment" : "comments");
+  }
+
+  function setReactionVisual(card, reacted, count) {
+    const button = card.querySelector("[data-react]");
+    if (!button) return;
+    button.dataset.reacted = reacted ? "true" : "false";
+    button.classList.toggle("active", reacted);
+    button.setAttribute("aria-pressed", String(reacted));
+    const label = button.querySelector("[data-react-label]");
+    if (label) label.textContent = reacted ? "Liked" : "Like";
+    updateCounter(card,"reaction",count);
+  }
+
+  function classifyPostImages(root = document) {
+    root.querySelectorAll(".post-media-button:not([data-ratio-ready])").forEach(frame => {
+      const img = frame.querySelector("img");
+      if (!img) return;
+      const classify = () => {
+        frame.dataset.ratioReady = "true";
+        const ratio = img.naturalWidth / Math.max(1,img.naturalHeight);
+        frame.classList.toggle("media-portrait",ratio < .8);
+        frame.classList.toggle("media-square",ratio >= .8 && ratio <= 1.25);
+        frame.classList.toggle("media-wide",ratio > 1.25);
+      };
+      if (img.complete) classify(); else img.addEventListener("load",classify,{once:true});
+    });
+  }
+
+  function openImageLightbox(url) {
+    const modal = document.querySelector('[data-modal="image"]');
+    const image = modal?.querySelector("[data-lightbox-image]");
+    const link = modal?.querySelector("[data-lightbox-original]");
+    if (!modal || !image || !link) return;
+    image.src = url;
+    link.href = url;
+    openModal("image");
+  }
+
+  function openRepostModal(postId) {
+    state.repostPostId = postId;
+    const form = document.querySelector("[data-repost-form]");
+    form?.reset();
+    const error = form?.querySelector("[data-repost-error]");
+    if (error) error.textContent = "";
+    openModal("repost");
   }
 
   function bindPosts(root) {
     injectIcons(root);
+    classifyPostImages(root);
     root.querySelectorAll("[data-post-id]").forEach(card => {
       const id = card.dataset.postId;
       card.querySelector("[data-post-menu]")?.addEventListener("click", event => {
@@ -393,45 +516,69 @@
         card.querySelector("[data-post-context]").classList.toggle("hidden");
       });
       card.querySelectorAll("[data-save-post]").forEach(btn => btn.addEventListener("click", async () => {
-        await api(`/community/posts/${encodeURIComponent(id)}/save`, { method:"POST", body:JSON.stringify({ scope:btn.dataset.savePost }) });
-        toast(btn.dataset.savePost === "global" ? "Saved to Global." : "Saved privately.");
-        card.querySelector("[data-post-context]").classList.add("hidden");
+        try {
+          await api(`/community/posts/${encodeURIComponent(id)}/save`, { method:"POST", body:JSON.stringify({ scope:btn.dataset.savePost }) });
+          toast(btn.dataset.savePost === "global" ? "Saved to Global." : "Saved privately.");
+          card.querySelector("[data-post-context]").classList.add("hidden");
+        } catch (ex) { toast(ex.message); }
       }));
       card.querySelector("[data-hide-post]")?.addEventListener("click", async () => {
-        await api(`/community/posts/${encodeURIComponent(id)}/hide`, { method:"POST" });
-        card.remove(); toast("Post hidden from your feed.");
+        try { await api(`/community/posts/${encodeURIComponent(id)}/hide`, { method:"POST" }); card.remove(); toast("Post hidden from your feed."); }
+        catch (ex) { toast(ex.message); }
       });
       card.querySelector("[data-report-post]")?.addEventListener("click", () => { state.reportPostId = id; openModal("report"); card.querySelector("[data-post-context]").classList.add("hidden"); });
       card.querySelector("[data-delete-post]")?.addEventListener("click", async () => {
         if (!confirm("Delete this post? This cannot be undone.")) return;
-        await api(`/community/posts/${encodeURIComponent(id)}`, { method:"DELETE" }); card.remove(); toast("Post deleted.");
+        try { await api(`/community/posts/${encodeURIComponent(id)}`, { method:"DELETE" }); card.remove(); toast("Post deleted."); }
+        catch (ex) { toast(ex.message); }
       });
-      card.querySelector("[data-react]")?.addEventListener("click", async btnEvent => {
-        const result = await api(`/community/posts/${encodeURIComponent(id)}/reaction`, { method:"POST", body:JSON.stringify({ type:"like" }) });
-        const button = btnEvent.currentTarget; button.classList.toggle("active",result.reacted); button.childNodes[button.childNodes.length-1].nodeValue = result.reacted ? "Liked" : "Like";
-        const count = card.querySelector(".post-summary span"); if (count) count.textContent = `${result.reactionCount} ${result.reactionCount === 1 ? "reaction" : "reactions"}`;
+      card.querySelector("[data-react]")?.addEventListener("click", async event => {
+        const button = event.currentTarget;
+        if (button.disabled) return;
+        const wasReacted = button.dataset.reacted === "true";
+        const previousCount = Number(card.querySelector("[data-reaction-count]")?.textContent || 0);
+        setReactionVisual(card,!wasReacted,Math.max(0,previousCount + (wasReacted ? -1 : 1)));
+        button.disabled = true;
+        try {
+          const result = await api(`/community/posts/${encodeURIComponent(id)}/reaction`, { method:"POST", body:JSON.stringify({ type:"like" }) });
+          setReactionVisual(card,Boolean(result.reacted),Number(result.reactionCount || 0));
+        } catch (ex) {
+          setReactionVisual(card,wasReacted,previousCount);
+          toast(ex.message);
+        } finally { button.disabled = false; }
       });
-      card.querySelector("[data-comment-toggle]")?.addEventListener("click", () => { const area=card.querySelector("[data-comment-area]"); area.classList.remove("hidden"); area.querySelector("input")?.focus(); });
+      card.querySelector("[data-comment-toggle]")?.addEventListener("click", () => { const area=card.querySelector("[data-comment-area]"); if (!area) { location.hash=`#/post/${encodeURIComponent(id)}?panel=comments`; return; } area.classList.remove("hidden"); area.querySelector("input")?.focus(); });
       card.querySelector("[data-comment-form]")?.addEventListener("submit", async event => {
         event.preventDefault(); const input=event.currentTarget.elements.body; const body=input.value.trim(); if(!body) return;
-        const result=await api(`/community/posts/${encodeURIComponent(id)}/comments`,{method:"POST",body:JSON.stringify({body})});
-        card.querySelector(".comment-list").insertAdjacentHTML("beforeend",commentHtml(result.comment)); injectIcons(card.querySelector(".comment-list")); input.value="";
+        const submit=event.currentTarget.querySelector("button[type=submit]"); submit.disabled=true;
+        try {
+          const result=await api(`/community/posts/${encodeURIComponent(id)}/comments`,{method:"POST",body:JSON.stringify({body})});
+          const list=card.querySelector(".comment-list");
+          list.insertAdjacentHTML("beforeend",commentHtml(result.comment));
+          if (!card.classList.contains("post-card-detail")) while(list.children.length>3) list.firstElementChild.remove();
+          injectIcons(list); input.value=""; updateCounter(card,"comment",Number(result.commentCount || list.children.length));
+          card.querySelector("[data-comment-area]")?.classList.remove("hidden");
+        } catch (ex) { toast(ex.message); } finally { submit.disabled=false; }
       });
-      card.querySelector("[data-share]")?.addEventListener("click", async () => {
-        const url = `${location.origin}${location.pathname}#/post/${id}`;
-        if (navigator.share) await navigator.share({ title:"MMOnsterpatch post", url }); else { await navigator.clipboard.writeText(url); toast("Post link copied."); }
-      });
+      card.querySelectorAll("[data-open-comments]").forEach(btn=>btn.addEventListener("click",()=>{location.hash=`#/post/${encodeURIComponent(id)}?panel=comments`;}));
+      card.querySelector("[data-open-reactions]")?.addEventListener("click",()=>{location.hash=`#/post/${encodeURIComponent(id)}?panel=reactions`;});
+      card.querySelector("[data-share-toggle]")?.addEventListener("click",event=>{event.stopPropagation();document.querySelectorAll("[data-share-menu]").forEach(menu=>{if(menu!==card.querySelector("[data-share-menu]"))menu.classList.add("hidden");});card.querySelector("[data-share-menu]").classList.toggle("hidden");});
+      card.querySelector("[data-copy-link]")?.addEventListener("click",async()=>{const url=`${location.origin}${location.pathname}#/post/${id}`;try{await navigator.clipboard.writeText(url);toast("Post link copied.");}catch{toast("Could not copy the link.");}card.querySelector("[data-share-menu]").classList.add("hidden");});
+      card.querySelector("[data-native-share]")?.addEventListener("click",async()=>{const url=`${location.origin}${location.pathname}#/post/${id}`;try{if(navigator.share)await navigator.share({title:"MMOnsterpatch post",url});else await navigator.clipboard.writeText(url);}catch{}card.querySelector("[data-share-menu]").classList.add("hidden");});
+      card.querySelector("[data-repost-open]")?.addEventListener("click",()=>{card.querySelector("[data-share-menu]").classList.add("hidden");openRepostModal(id);});
+      card.querySelectorAll("[data-open-media]").forEach(btn=>btn.addEventListener("click",()=>openImageLightbox(btn.dataset.openMedia)));
     });
   }
 
   async function renderProfile() {
     await loadMe();
     const root=document.querySelector("#view-root"), profile=state.me.profile||{}, account=state.me.account||{}, main=currentMainCharacter();
+    const coverStyle=profile.coverUrl?` style="background-image:linear-gradient(110deg,rgba(14,50,40,.22),rgba(10,30,44,.10)),url('${attr(profile.coverUrl)}')"`:"";
     root.innerHTML=`<section class="content-card profile-card">
-      <div class="profile-cover"></div>
+      <div class="profile-cover"${coverStyle}></div>
       <div class="profile-main">
         ${avatarHtml({displayName:account.displayName,avatarUrl:profile.avatarUrl||main?.avatarUrl},"avatar-xl")}
-        <div class="profile-title"><h1>${escapeHtml(account.displayName||account.username)}</h1><div class="profile-badges">${profile.verifiedPlayer?'<span class="verified-badge"><span data-icon="shield-check"></span>Verified MMOnsterpatch Player</span>':""}${main?`<span class="rank-badge">Rank ${escapeHtml(main.rank||"E")}</span>`:""}</div></div>
+        <div class="profile-title"><h1>${escapeHtml(account.displayName||account.username)}</h1><div class="profile-badges">${profile.verifiedPlayer?'<span class="verified-badge"><span data-icon="shield-check"></span>Verified MMOnsterpatch Player</span>':""}${roleBadgeHtml(profile.role)}${main?`<span class="rank-badge">Rank ${escapeHtml(main.rank||"E")}</span>`:""}</div></div>
         <a class="secondary-button" href="#/settings"><span data-icon="edit"></span>Edit Profile</a>
       </div>
       <nav class="profile-tabs"><a class="active" href="#/profile">Posts</a><a href="#/characters">Characters</a><a href="#/friends">Friends</a></nav>
@@ -488,13 +635,39 @@
   }
 
   async function renderSettings() {
-    const root=document.querySelector("#view-root"),account=state.me.account,profile=state.me.profile||{},prefs=profile.preferences||{};
+    const root=document.querySelector("#view-root"),account=state.me.account,profile=state.me.profile||{},prefs=profile.preferences||{},main=currentMainCharacter();
     const fontScale=Math.max(.8,Math.min(1.4,Number(prefs.fontScale||1)));
     const fontStyle=["game","comfortable","system"].includes(prefs.fontStyle)?prefs.fontStyle:"game";
-    root.innerHTML=`<div class="page-head"><div><h1>Preferences & Account</h1><p>Profile details, appearance, accessibility, and community preferences.</p></div></div>
+    const customAvatar=profile.customAvatarUrl||"";
+    const effectiveAvatar=customAvatar||main?.avatarUrl||"assets/default-player.png";
+    const coverUrl=profile.coverUrl||"";
+    const gameAvatarClass=/\/community-character-assets\//i.test(effectiveAvatar)?" game-avatar":"";
+    root.innerHTML=`<div class="page-head"><div><h1>Preferences & Account</h1><p>Profile details, images, appearance, accessibility, and community preferences.</p></div></div>
       <section class="content-card settings-section">
         <div class="settings-section-head"><div class="settings-pixel-icon"><img src="assets/profile-icon.png" alt=""></div><div><h2>Profile</h2><p>Information shown to other MMOnsterpatch players.</p></div></div>
         <form class="settings-form" data-settings-form>
+          <div class="profile-media-settings">
+            <div class="profile-image-setting">
+              <strong>Profile picture</strong>
+              <span class="avatar avatar-xl profile-image-preview${gameAvatarClass}" data-avatar-preview><img src="${attr(effectiveAvatar)}" alt="Current profile picture"></span>
+              <input type="hidden" name="avatarUrl" value="${attr(customAvatar)}">
+              <div class="profile-media-actions">
+                <label class="secondary-button file-button">Upload picture<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-avatar-file></label>
+                <button class="text-button" type="button" data-avatar-reset>${main?"Use main character":"Use default picture"}</button>
+              </div>
+              <small>Square images work best. Uploads are limited to 8 MB.</small>
+            </div>
+            <div class="profile-cover-setting">
+              <strong>Profile banner</strong>
+              <div class="cover-preview ${coverUrl?"has-image":""}" data-cover-preview${coverUrl?` style="background-image:url('${attr(coverUrl)}')"`:""}></div>
+              <input type="hidden" name="coverUrl" value="${attr(coverUrl)}">
+              <div class="profile-media-actions">
+                <label class="secondary-button file-button">Upload banner<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-cover-file></label>
+                <button class="text-button" type="button" data-cover-reset>Remove banner</button>
+              </div>
+              <small>Wide images are cropped to fit the profile header.</small>
+            </div>
+          </div>
           <label>Display name<input name="displayName" maxlength="32" value="${attr(account.displayName||"")}" required></label>
           <label>Biography<textarea name="bio" maxlength="500" placeholder="Tell the community about yourself">${escapeHtml(profile.bio||"")}</textarea></label>
           <label>Email<input type="email" value="${attr(account.email||"")}" disabled><small>Email changes require account verification and are not enabled in this release.</small></label>
@@ -532,11 +705,41 @@
         </form>
       </section>`;
     injectIcons(root);
-    root.querySelector("[data-settings-form]").addEventListener("submit",async event=>{
+
+    const settingsForm=root.querySelector("[data-settings-form]");
+    const uploadImage=async(file)=>{
+      const upload=new FormData();upload.append("file",file);
+      return await api("/community/media",{method:"POST",body:upload});
+    };
+    settingsForm.querySelector("[data-avatar-file]").addEventListener("change",async event=>{
+      const file=event.target.files?.[0];if(!file)return;
+      try{const result=await uploadImage(file);settingsForm.elements.avatarUrl.value=result.mediaUrl;const preview=root.querySelector("[data-avatar-preview]");preview.classList.remove("game-avatar");preview.querySelector("img").src=result.mediaUrl;toast("Profile picture uploaded. Save Profile to apply it.");}
+      catch(ex){settingsForm.querySelector("[data-settings-error]").textContent=ex.message;}
+      finally{event.target.value="";}
+    });
+    settingsForm.querySelector("[data-cover-file]").addEventListener("change",async event=>{
+      const file=event.target.files?.[0];if(!file)return;
+      try{const result=await uploadImage(file);settingsForm.elements.coverUrl.value=result.mediaUrl;const preview=root.querySelector("[data-cover-preview]");preview.style.backgroundImage=`url('${result.mediaUrl}')`;preview.classList.add("has-image");toast("Banner uploaded. Save Profile to apply it.");}
+      catch(ex){settingsForm.querySelector("[data-settings-error]").textContent=ex.message;}
+      finally{event.target.value="";}
+    });
+    settingsForm.querySelector("[data-avatar-reset]").addEventListener("click",()=>{
+      settingsForm.elements.avatarUrl.value="";
+      const preview=root.querySelector("[data-avatar-preview]");
+      const nextAvatar=main?.avatarUrl||"assets/default-player.png";
+      preview.classList.toggle("game-avatar",/\/community-character-assets\//i.test(nextAvatar));
+      preview.querySelector("img").src=nextAvatar;
+    });
+    settingsForm.querySelector("[data-cover-reset]").addEventListener("click",()=>{
+      settingsForm.elements.coverUrl.value="";
+      const preview=root.querySelector("[data-cover-preview]");preview.style.backgroundImage="";preview.classList.remove("has-image");
+    });
+    settingsForm.addEventListener("submit",async event=>{
       event.preventDefault(); const data=new FormData(event.currentTarget); const error=event.currentTarget.querySelector("[data-settings-error]"); error.textContent="";
-      try { await api("/community/profile",{method:"PUT",body:JSON.stringify({displayName:data.get("displayName"),bio:data.get("bio")})}); await loadMe(); toast("Profile saved."); }
+      try { await api("/community/profile",{method:"PUT",body:JSON.stringify({displayName:data.get("displayName"),bio:data.get("bio"),avatarUrl:data.get("avatarUrl"),coverUrl:data.get("coverUrl")})}); await loadMe(); toast("Profile saved."); }
       catch(ex){error.textContent=ex.message;}
     });
+
     const prefForm=root.querySelector("[data-preferences-form]");
     const range=prefForm.elements.fontScale;
     const updatePreview=()=>{
@@ -565,14 +768,22 @@
     const data=await api("/community/messages/threads");
     const threads=data.threads||[];
     if(!state.activeThreadId&&threads.length) state.activeThreadId=threads[0].threadId;
-    root.innerHTML=`<section class="content-card messages-layout ${state.activeThreadId?"thread-selected":""}" data-messages-layout>
-      <aside class="thread-column"><div class="thread-head"><h1>Messages</h1><button class="icon-button" type="button" data-new-message aria-label="New message"><span data-icon="edit"></span></button></div><label class="thread-search"><span data-icon="search"></span><input type="search" placeholder="Search messages" data-thread-filter></label><div class="thread-list" data-thread-list>${threads.length?threads.map(threadHtml).join(""):'<div class="empty-card"><p>No conversations yet.</p></div>'}</div></aside>
-      <section class="chat-column" data-chat-column>${state.activeThreadId?'<div class="loading-card">Loading conversation…</div>':'<div class="empty-card"><div class="empty-icon" data-icon="message-circle"></div><h2>Select a conversation</h2><p>Private messages appear here.</p></div>'}</section>
-    </section>`;
+
+    const panel=document.querySelector("[data-sidebar-message-panel]");
+    const list=panel?.querySelector("[data-sidebar-thread-list]");
+    if(panel&&list){
+      panel.classList.remove("hidden");
+      list.innerHTML=threads.length?threads.map(threadHtml).join(""):'<div class="empty-card sidebar-empty"><p>No conversations yet.</p></div>';
+      injectIcons(panel);
+      const newMessageButton=panel.querySelector("[data-sidebar-new-message]");if(newMessageButton)newMessageButton.onclick=()=>openModal("new-message");
+      panel.querySelectorAll("[data-thread-id]").forEach(btn=>btn.addEventListener("click",async()=>{state.activeThreadId=btn.dataset.threadId;await renderMessages();}));
+      const filter=panel.querySelector("[data-sidebar-thread-filter]");
+      filter.oninput=event=>{const q=event.target.value.toLowerCase();panel.querySelectorAll("[data-thread-id]").forEach(row=>row.classList.toggle("hidden",!row.textContent.toLowerCase().includes(q)));};
+    }
+
+    root.innerHTML=`<section class="content-card messages-center"><section class="chat-column" data-chat-column>${state.activeThreadId?'<div class="loading-card">Loading conversation…</div>':'<div class="empty-card"><div class="empty-icon" data-icon="message-circle"></div><h2>Select a conversation</h2><p>Choose a message from the list on the left.</p><button class="primary-button" type="button" data-empty-new-message><span data-icon="edit"></span>New Message</button></div>'}</section></section>`;
     injectIcons(root);
-    root.querySelector("[data-new-message]")?.addEventListener("click",()=>openModal("new-message"));
-    root.querySelectorAll("[data-thread-id]").forEach(btn=>btn.addEventListener("click",async()=>{state.activeThreadId=btn.dataset.threadId; await renderMessages();}));
-    root.querySelector("[data-thread-filter]")?.addEventListener("input",event=>{const q=event.target.value.toLowerCase();root.querySelectorAll("[data-thread-id]").forEach(row=>row.classList.toggle("hidden",!row.textContent.toLowerCase().includes(q)));});
+    root.querySelector("[data-empty-new-message]")?.addEventListener("click",()=>openModal("new-message"));
     if(state.activeThreadId) await renderActiveThread(state.activeThreadId);
   }
 
@@ -601,6 +812,50 @@
     catch(ex){toast(ex.message);}
   }
 
+  async function renderModeration(query="") {
+    if(!canModerate()) throw new Error("Moderator permission is required.");
+    const root=document.querySelector("#view-root");
+    const data=await api(`/community/moderation?q=${encodeURIComponent(query)}`);
+    const members=data.members||[],reports=data.reports||[];
+    root.innerHTML=`<div class="page-head"><div><h1>Moderation Tools</h1><p>Look up community accounts, manage permissions, and review reported posts.</p></div>${roleBadgeHtml(currentRole())}</div>
+      <section class="content-card moderation-section">
+        <div class="section-heading"><h2>User lookup</h2></div>
+        <form class="moderation-search" data-moderation-search><label><span data-icon="search"></span><input name="q" value="${attr(query)}" placeholder="Username, display name, or email" minlength="2"></label><button class="primary-button" type="submit">Search</button></form>
+        <div class="moderation-results">${query.length<2?'<div class="empty-card"><p>Enter at least two characters to find an account.</p></div>':members.length?members.map(member=>{
+          const summary=member.summary||{};
+          const role=String(member.role||"user").toLowerCase();
+          const roleControl=data.canManageRoles&&role!=="owner"?`<label class="role-control">Permission<select data-role-account="${attr(member.accountId)}"><option value="user" ${role==="user"?"selected":""}>User</option><option value="moderator" ${role==="moderator"?"selected":""}>Moderator</option></select></label>`:"";
+          return `<article class="moderation-user-card">${avatarHtml(summary,"avatar-large")}<div class="moderation-user-copy"><strong>${escapeHtml(member.displayName||member.username)}</strong><small>@${escapeHtml(member.username)} · ${escapeHtml(member.accountId)}</small>${member.email?`<small>${escapeHtml(member.email)}</small>`:""}<div class="profile-badges">${summary.verifiedPlayer?'<span class="verified-badge"><span data-icon="shield-check"></span>Verified Player</span>':""}${roleBadgeHtml(role)}${summary.rank?`<span class="rank-badge">Rank ${escapeHtml(summary.rank)}</span>`:""}</div></div><div class="moderation-user-actions">${roleControl}<button class="secondary-button small" type="button" data-moderation-message="${attr(member.accountId)}"><span data-icon="message-circle"></span>Message</button></div></article>`;
+        }).join(""):'<div class="empty-card"><p>No matching accounts found.</p></div>'}</div>
+      </section>
+      <section class="content-card moderation-section">
+        <div class="section-heading"><h2>Remove a post</h2></div>
+        <form class="moderation-search" data-remove-post-form><label><span data-icon="flag"></span><input name="postId" placeholder="post_..." required></label><button class="danger-button" type="submit">Remove Post</button></form>
+      </section>
+      <section class="content-card moderation-section">
+        <div class="section-heading"><h2>Open reports</h2><span>${reports.length}</span></div>
+        <div class="report-list">${reports.length?reports.map(report=>`<article class="report-card" data-report-id="${attr(report.reportId)}"><div><strong>${escapeHtml(report.reason)}</strong><small>${formatDate(report.createdUtc)} · Post ${escapeHtml(report.postId)}</small><p>${escapeHtml(report.details||"No additional details.")}</p></div><div class="report-actions"><a class="secondary-button small" href="#/post/${attr(report.postId)}">View</a><button class="secondary-button small" type="button" data-report-action="dismiss">Dismiss</button><button class="danger-button small" type="button" data-report-action="remove">Remove Post</button></div></article>`).join(""):'<div class="empty-card"><div class="empty-icon" data-icon="shield-check"></div><h2>No open reports</h2><p>The moderation queue is clear.</p></div>'}</div>
+      </section>`;
+    injectIcons(root);
+    root.querySelector("[data-moderation-search]").addEventListener("submit",event=>{event.preventDefault();renderModeration(event.currentTarget.elements.q.value.trim());});
+    root.querySelectorAll("[data-moderation-message]").forEach(btn=>btn.addEventListener("click",()=>startThread(btn.dataset.moderationMessage)));
+    root.querySelectorAll("[data-role-account]").forEach(select=>select.addEventListener("change",async()=>{
+      try{await api(`/community/moderation/users/${encodeURIComponent(select.dataset.roleAccount)}/role`,{method:"PUT",body:JSON.stringify({role:select.value})});toast("Permission updated.");await renderModeration(query);}
+      catch(ex){toast(ex.message);await renderModeration(query);}
+    }));
+    root.querySelector("[data-remove-post-form]").addEventListener("submit",async event=>{
+      event.preventDefault();const id=event.currentTarget.elements.postId.value.trim();if(!confirm(`Remove ${id} from the community?`))return;
+      try{await api(`/community/moderation/posts/${encodeURIComponent(id)}`,{method:"DELETE"});toast("Post removed.");event.currentTarget.reset();}
+      catch(ex){toast(ex.message);}
+    });
+    root.querySelectorAll("[data-report-action]").forEach(btn=>btn.addEventListener("click",async()=>{
+      const card=btn.closest("[data-report-id]"),action=btn.dataset.reportAction;
+      if(action==="remove"&&!confirm("Remove the reported post?"))return;
+      try{await api(`/community/moderation/reports/${encodeURIComponent(card.dataset.reportId)}`,{method:"POST",body:JSON.stringify({action,note:"Reviewed in web moderation tools"})});toast(action==="remove"?"Reported post removed.":"Report dismissed.");await renderModeration(query);}
+      catch(ex){toast(ex.message);}
+    }));
+  }
+
   function openModal(name) { document.querySelector(`[data-modal="${name}"]`)?.classList.remove("hidden"); document.body.style.overflow="hidden"; }
   function closeModal(name) { document.querySelector(`[data-modal="${name}"]`)?.classList.add("hidden"); if(!document.querySelector(".modal-backdrop:not(.hidden)"))document.body.style.overflow=""; }
   function closeFloatingPanels(){document.querySelectorAll(".floating-panel").forEach(p=>p.classList.add("hidden"));document.querySelector("[data-account-menu-toggle]")?.setAttribute("aria-expanded","false");}
@@ -626,7 +881,7 @@
 
     document.querySelector("[data-account-menu-toggle]")?.addEventListener("click",event=>{event.stopPropagation();const panel=document.querySelector("[data-account-menu]");const open=panel.classList.toggle("hidden");document.querySelector("[data-notification-panel]").classList.add("hidden");event.currentTarget.setAttribute("aria-expanded",String(!open));});
     document.querySelector("[data-notification-toggle]")?.addEventListener("click",event=>{event.stopPropagation();document.querySelector("[data-notification-panel]").classList.toggle("hidden");document.querySelector("[data-account-menu]").classList.add("hidden");});
-    document.addEventListener("click",event=>{if(!event.target.closest(".floating-panel")&&!event.target.closest("[data-account-menu-toggle]")&&!event.target.closest("[data-notification-toggle]"))closeFloatingPanels();document.querySelectorAll("[data-post-context]").forEach(menu=>{if(!event.target.closest(".post-menu-wrap"))menu.classList.add("hidden");});});
+    document.addEventListener("click",event=>{if(!event.target.closest(".floating-panel")&&!event.target.closest("[data-account-menu-toggle]")&&!event.target.closest("[data-notification-toggle]"))closeFloatingPanels();document.querySelectorAll("[data-post-context]").forEach(menu=>{if(!event.target.closest(".post-menu-wrap"))menu.classList.add("hidden");});document.querySelectorAll("[data-share-menu]").forEach(menu=>{if(!event.target.closest(".share-action-wrap"))menu.classList.add("hidden");});});
     document.querySelector("[data-logout]")?.addEventListener("click",()=>logout(true));
     document.querySelectorAll("[data-theme-open]").forEach(btn=>btn.addEventListener("click",()=>{renderThemePresets();openModal("theme");closeFloatingPanels();}));
     document.querySelectorAll("[data-dark-toggle]").forEach(toggle=>toggle.addEventListener("change",async()=>{const prefs={...(state.me.profile.preferences||{}),themeMode:toggle.checked?"dark":"light"};applyTheme(prefs);try{await savePreferences(prefs);}catch(ex){toast(ex.message);}}));
@@ -635,6 +890,7 @@
 
     document.querySelector("[data-post-image]")?.addEventListener("change",event=>{const file=event.target.files?.[0];state.selectedMedia=file||null;const preview=document.querySelector("[data-media-preview]");if(file){preview.style.backgroundImage=`url(${URL.createObjectURL(file)})`;preview.classList.remove("hidden");}else preview.classList.add("hidden");});
     document.querySelector("[data-post-form]")?.addEventListener("submit",submitPost);
+    document.querySelector("[data-repost-form]")?.addEventListener("submit",submitRepost);
     document.querySelector("[data-report-form]")?.addEventListener("submit",submitReport);
     document.querySelector("[data-theme-form]")?.addEventListener("submit",submitTheme);
     document.querySelector("[data-theme-reset]")?.addEventListener("click",()=>{const p=state.themePresets[0];document.querySelector("[data-theme-form] [name=primaryColor]").value=p.primary;document.querySelector("[data-theme-form] [name=accentColor]").value=p.accent;});
@@ -658,10 +914,23 @@
   }
 
   async function submitPost(event) {
-    event.preventDefault();const form=event.currentTarget,error=form.querySelector("[data-post-error]");error.textContent="";const body=form.elements.body.value.trim();if(!body){error.textContent="Write something first.";return;}
+    event.preventDefault();const form=event.currentTarget,error=form.querySelector("[data-post-error]");error.textContent="";const body=form.elements.body.value.trim();if(!body&&!state.selectedMedia){error.textContent="Write something or attach a photo first.";return;}
     try{let mediaUrl=null;if(state.selectedMedia){const upload=new FormData();upload.append("file",state.selectedMedia);const result=await api("/community/media",{method:"POST",body:upload});mediaUrl=result.mediaUrl;}
       await api("/community/posts",{method:"POST",body:JSON.stringify({body,visibility:form.elements.visibility?.value||"global",mediaUrl})});form.reset();state.selectedMedia=null;document.querySelector("[data-media-preview]").classList.add("hidden");closeModal("post");toast("Post published.");if(state.currentRoute==="feed")await renderFeed();
     }catch(ex){error.textContent=ex.message;}
+  }
+
+  async function submitRepost(event) {
+    event.preventDefault();
+    const form=event.currentTarget,error=form.querySelector("[data-repost-error]");
+    error.textContent="";
+    if(!state.repostPostId){error.textContent="The original post could not be identified.";return;}
+    const submit=form.querySelector("button[type=submit]"); submit.disabled=true;
+    try {
+      await api(`/community/posts/${encodeURIComponent(state.repostPostId)}/repost`,{method:"POST",body:JSON.stringify({body:form.elements.body.value.trim(),visibility:form.elements.visibility.value||"global"})});
+      form.reset(); closeModal("repost"); state.repostPostId=null; toast("Post reposted to your feed.");
+      location.hash="#/feed"; if(state.currentRoute==="feed")await renderFeed();
+    } catch(ex){error.textContent=ex.message;} finally {submit.disabled=false;}
   }
 
   async function submitReport(event) { event.preventDefault();const form=event.currentTarget,error=form.querySelector("[data-report-error]");error.textContent="";const data=new FormData(form);try{await api(`/community/posts/${encodeURIComponent(state.reportPostId)}/report`,{method:"POST",body:JSON.stringify({reason:data.get("reason"),details:data.get("details")})});form.reset();closeModal("report");toast("Report submitted to moderators.");}catch(ex){error.textContent=ex.message;} }

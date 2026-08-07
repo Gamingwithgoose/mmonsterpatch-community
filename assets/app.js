@@ -676,7 +676,7 @@
         </form>
       </section>
       <section class="content-card settings-section">
-        <div class="settings-section-head"><div class="settings-pixel-icon"><img src="assets/game-star.png" alt=""></div><div><h2>Display Preferences</h2><p>These settings are stored with your account and follow you between browsers.</p></div></div>
+        <div class="settings-section-head"><div class="settings-pixel-icon" aria-hidden="true"><span data-icon="sparkles"></span></div><div><h2>Display Preferences</h2><p>These settings are stored with your account and follow you between browsers.</p></div></div>
         <form class="settings-form preferences-form" data-preferences-form>
           <label>Text style
             <select name="fontStyle">

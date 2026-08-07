@@ -98,3 +98,46 @@ h1,h2,h3,.top-brand,.brand-lockup strong,.auth-copy h1,.profile-title h1,.page-h
 .primary-button,.secondary-button,.auth-tab{position:relative;overflow:hidden;}
 .primary-button::after,.secondary-button::after,.auth-tab::after{content:"";position:absolute;inset:0;background:url("game-button.png") center/100% 100% no-repeat;opacity:.09;pointer-events:none;image-rendering:pixelated;}
 .character-art img,.avatar img{image-rendering:pixelated;object-fit:contain;}
+
+/* v0.5.3 character-card containment and matching Preferences icon.
+   Character portraits stay entirely inside the artwork panel above the details. */
+.character-card {
+  overflow: hidden;
+}
+.character-art {
+  box-sizing: border-box;
+  height: 180px;
+  min-height: 180px;
+  overflow: hidden;
+  padding: 16px 18px 10px;
+  isolation: isolate;
+}
+.character-art img,
+.character-art img[src*="/community-character-assets/"],
+.character-art img[src*="community-character-assets/"] {
+  display: block;
+  position: relative;
+  z-index: 1;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 150px !important;
+  margin: auto;
+  object-fit: contain !important;
+  object-position: center bottom !important;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.character-info {
+  position: relative;
+  z-index: 3;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+.settings-pixel-icon .icon {
+  width: 28px;
+  height: 28px;
+  color: var(--primary);
+  stroke-width: 2;
+}
+

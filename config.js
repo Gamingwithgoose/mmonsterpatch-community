@@ -1,11 +1,8 @@
-/*
-  Public frontend configuration only.
-  Never place passwords, database credentials, private keys, or API secrets here.
-*/
 window.MMP_CONFIG = {
-  siteName: "MMOnsterpatch",
-  mode: "prototype",
+  siteName: "MMOnsterpatch Community",
   apiBaseUrl: "https://account.gamingwithgoose.com/api",
-  statusApiUrl: "https://account.gamingwithgoose.com/api/launcher/status",
-  statusRefreshMs: 60000
+  communityOrigin: "https://mmonsterpatch.gamingwithgoose.com",
+  statusRefreshMs: 30000,
+  requestTimeoutMs: 15000,
+  production: true
 };

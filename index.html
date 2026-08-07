@@ -1,44 +1,219 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Log in | MMOnsterpatch</title>
-  <meta name="description" content="Log in or create one MMOnsterpatch account for both the game server and community.">
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="assets/styles.css">
-  <script src="config.js" defer></script><script src="assets/app.js" defer></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#285b46">
+  <meta name="description" content="MMOnsterpatch player accounts, profiles, community posts, friends, characters and private messages.">
+  <title>MMOnsterpatch Community</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/styles.css">
+  <link rel="stylesheet" href="assets/monsterpatch-ui.css">
+  <script src="config.js" defer></script>
+  <script src="assets/app.js" defer></script>
 </head>
-<body class="auth-page">
-  <main class="auth-layout">
-    <section class="auth-brand">
-      <div class="auth-logo"><img src="assets/logo.svg" alt=""><div><strong>MMOnsterpatch</strong><small>Community Network</small></div></div>
-      <h1>Your game account and community profile, together.</h1>
-      <p>Log in to see the private community feed, chat with friends, manage linked characters, and choose which character represents you across MMOnsterpatch.</p>
-      <div class="auth-benefits">
-        <div class="auth-benefit"><span>◆</span>One login for the website and server</div>
-        <div class="auth-benefit"><span>☰</span>Private player feed and profiles</div>
-        <div class="auth-benefit"><span>✉</span>Direct private messaging</div>
+<body>
+  <div id="boot-screen" class="boot-screen" aria-live="polite">
+    <div class="boot-mark"><img src="assets/mmonsterpatch-title-logo.png" alt=""></div>
+    <strong>MMOnsterpatch</strong>
+    <span>Connecting to the community…</span>
+  </div>
+
+  <main id="auth-screen" class="auth-page hidden">
+    <section class="auth-brand-panel">
+      <a class="brand-lockup" href="#/">
+        <img src="assets/mmonsterpatch-title-logo.png" alt="">
+        <span><strong>MMOnsterpatch</strong><small>Community</small></span>
+      </a>
+      <div class="auth-copy">
+        <p class="eyebrow">ONE ACCOUNT · GAME + COMMUNITY</p>
+        <h1>Your MMOnsterpatch world, all in one place.</h1>
+        <p>Use the same account for Online Play, linked characters, player profiles, posts, friends and private messages.</p>
+      </div>
+      <div class="auth-world-card" aria-hidden="true"><img src="assets/feature-screenshot.png" alt=""></div>
+      <div class="auth-highlights" aria-label="Community features">
+        <div><span class="feature-icon" data-icon="user-check"></span><span><strong>Linked players</strong><small>Verified after a server character is created.</small></span></div>
+        <div><span class="feature-icon" data-icon="users"></span><span><strong>Private community</strong><small>The feed is only available after login.</small></span></div>
+        <div><span class="feature-icon" data-icon="message-circle"></span><span><strong>Direct messages</strong><small>Private conversations with other players.</small></span></div>
       </div>
     </section>
 
-    <section class="auth-card" aria-label="Account access">
-      <div class="auth-tabs"><button class="auth-tab active" data-auth-tab="login" type="button">Log In</button><button class="auth-tab" data-auth-tab="signup" type="button">Create Account</button></div>
-      <form class="auth-form" id="login-form" data-auth-form="login">
-        <div class="field"><label for="login-user">Username or email</label><input id="login-user" name="username" autocomplete="username" required></div>
-        <div class="field"><label for="login-password">Password</label><input id="login-password" type="password" name="password" autocomplete="current-password" required></div>
-        <div class="auth-error" data-form-error></div>
-        <button class="auth-submit" type="submit">Log In to MMOnsterpatch</button>
-        <p class="form-note">Prototype mode accepts any non-empty username and password. Production will validate against your existing server account database.</p>
-      </form>
-      <form class="auth-form hidden" id="signup-form" data-auth-form="signup">
-        <div class="form-row"><div class="field"><label for="signup-user">Username</label><input id="signup-user" name="username" autocomplete="username" required></div><div class="field"><label for="display-name">Display name</label><input id="display-name" name="displayName" required></div></div>
-        <div class="field"><label for="signup-email">Email</label><input id="signup-email" type="email" name="email" autocomplete="email" required></div>
-        <div class="form-row"><div class="field"><label for="signup-password">Password</label><input id="signup-password" type="password" name="password" autocomplete="new-password" required></div><div class="field"><label for="signup-confirm">Confirm password</label><input id="signup-confirm" type="password" name="confirm" autocomplete="new-password" required></div></div>
-        <div class="auth-error" data-form-error></div>
-        <button class="auth-submit" type="submit">Create Server + Community Account</button>
-        <p class="form-note">In production, this single form will create the shared account used by both the game launcher and social website.</p>
-      </form>
+    <section class="auth-form-panel">
+      <div class="auth-card">
+        <div class="auth-tabs" role="tablist">
+          <button type="button" class="auth-tab active" data-auth-tab="login">Log In</button>
+          <button type="button" class="auth-tab" data-auth-tab="register">Create Account</button>
+        </div>
+
+        <form id="login-form" class="auth-form" autocomplete="on">
+          <h2>Welcome back</h2>
+          <p>Log in with your existing MMOnsterpatch username or email.</p>
+          <label>Username or email<input name="usernameOrEmail" autocomplete="username" required></label>
+          <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+          <div class="form-error" data-login-error></div>
+          <button class="primary-button full" type="submit">Log In</button>
+          <button class="text-button" type="button" data-forgot-password>Forgot password?</button>
+        </form>
+
+        <form id="register-form" class="auth-form hidden" autocomplete="on">
+          <h2>Create your account</h2>
+          <p>This account will also work in the MMOnsterpatch launcher and server.</p>
+          <div class="form-grid">
+            <label>Username<input name="username" minlength="3" maxlength="32" autocomplete="username" required></label>
+            <label>Display name<input name="displayName" minlength="2" maxlength="32" required></label>
+          </div>
+          <label>Email<input name="email" type="email" autocomplete="email" required></label>
+          <div class="form-grid">
+            <label>Password<input name="password" type="password" minlength="8" autocomplete="new-password" required></label>
+            <label>Confirm password<input name="confirmPassword" type="password" minlength="8" autocomplete="new-password" required></label>
+          </div>
+          <div class="form-error" data-register-error></div>
+          <button class="primary-button full" type="submit">Create Game + Community Account</button>
+        </form>
+
+        <div class="auth-server-card">
+          <span class="status-dot" data-auth-status-dot></span>
+          <span><strong data-auth-status-title>Checking server…</strong><small data-auth-status-subtitle>MMOnsterpatch Official Server</small></span>
+          <span class="player-count" data-auth-player-count>—</span>
+        </div>
+      </div>
+      <p class="legal-copy">By creating an account, you agree to the <a href="rules.html">Community Rules</a>, <a href="terms.html">Terms</a>, and <a href="privacy.html">Privacy Policy</a>.</p>
     </section>
   </main>
-  <footer class="auth-footer">Independent MMOnsterpatch community operated by Gaming With Goose · Prototype interface</footer>
+
+  <div id="app-screen" class="app hidden">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="top-brand" href="#/feed" aria-label="MMOnsterpatch Home">
+          <img src="assets/mmonsterpatch-title-logo.png" alt="">
+          <span>MMOnsterpatch</span>
+        </a>
+        <label class="global-search">
+          <span data-icon="search"></span>
+          <input type="search" placeholder="Search MMOnsterpatch" aria-label="Search MMOnsterpatch" data-global-search>
+        </label>
+        <nav class="top-nav" aria-label="Primary">
+          <a href="#/feed" class="top-nav-button" data-route-link="feed" aria-label="Home"><span data-icon="home"></span></a>
+          <a href="#/messages" class="top-nav-button" data-route-link="messages" aria-label="Messages"><span data-icon="message-circle"></span><b class="nav-badge hidden" data-message-count></b></a>
+          <button class="top-nav-button" type="button" aria-label="Notifications" data-notification-toggle><span data-icon="bell"></span><b class="nav-badge hidden" data-notification-count></b></button>
+          <a href="#/profile" class="top-nav-button" data-route-link="profile" aria-label="Profile"><span data-icon="user"></span></a>
+          <button class="account-menu-button" type="button" data-account-menu-toggle aria-haspopup="menu" aria-expanded="false">
+            <span class="avatar avatar-small" data-current-avatar></span>
+            <span class="account-menu-name" data-current-name>Player</span>
+            <span class="chevron" data-icon="chevron-down"></span>
+          </button>
+        </nav>
+      </div>
+      <div class="notification-panel floating-panel hidden" data-notification-panel>
+        <div class="floating-head"><strong>Notifications</strong><button type="button" data-mark-notifications>Mark all read</button></div>
+        <div data-notification-list class="notification-list"></div>
+      </div>
+      <div class="account-dropdown floating-panel hidden" data-account-menu role="menu">
+        <a href="#/profile" class="account-summary" role="menuitem">
+          <span class="avatar" data-current-avatar></span>
+          <span><strong data-current-name>Player</strong><small>View your profile</small></span>
+        </a>
+        <div class="menu-divider"></div>
+        <a href="#/settings" role="menuitem"><span data-icon="settings"></span>Preferences &amp; account</a>
+        <button type="button" data-theme-open role="menuitem"><span data-icon="palette"></span>Themes</button>
+        <label class="menu-toggle-row"><span><span data-icon="moon"></span>Dark mode</span><input type="checkbox" data-dark-toggle><i></i></label>
+        <div class="menu-divider"></div>
+        <button type="button" data-logout role="menuitem"><span data-icon="log-out"></span>Log out</button>
+      </div>
+    </header>
+
+    <div class="app-layout">
+      <aside class="left-sidebar">
+        <section class="sidebar-card profile-shortcut">
+          <a href="#/profile">
+            <span class="avatar avatar-large" data-current-avatar></span>
+            <span><strong data-current-name>Player</strong><small data-current-rank></small></span>
+          </a>
+        </section>
+        <nav class="sidebar-card side-nav" aria-label="Community navigation">
+          <a href="#/feed" data-route-link="feed"><span class="nav-icon" data-icon="home"></span><span>Home Feed</span></a>
+          <a href="#/profile" data-route-link="profile"><span class="nav-icon" data-icon="user"></span><span>Profile</span></a>
+          <a href="#/messages" data-route-link="messages"><span class="nav-icon" data-icon="message-circle"></span><span>Messages</span></a>
+          <a href="#/friends" data-route-link="friends"><span class="nav-icon" data-icon="users"></span><span>Friends</span></a>
+          <a href="#/characters" data-route-link="characters"><span class="nav-icon" data-icon="sparkles"></span><span>Characters</span></a>
+          <a href="#/saved" data-route-link="saved"><span class="nav-icon" data-icon="bookmark"></span><span>Saved</span></a>
+        </nav>
+      </aside>
+
+      <main class="main-content" id="view-root" tabindex="-1"></main>
+
+      <aside class="right-sidebar">
+        <section class="sidebar-card server-card">
+          <div class="section-heading"><h2>Server Status</h2></div>
+          <div class="server-status-line">
+            <span class="status-dot" data-status-dot></span>
+            <span><strong data-status-title>Checking…</strong><small>MMOnsterpatch Official Server</small></span>
+          </div>
+          <div class="server-player-block">
+            <strong data-player-count>—</strong>
+            <span>Players Online</span>
+          </div>
+        </section>
+        <section class="sidebar-card friends-card">
+          <div class="section-heading"><h2>Friends</h2><a href="#/friends">See all</a></div>
+          <div class="friend-list" data-right-friends></div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" data-modal="post">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="post-modal-title">
+      <header><h2 id="post-modal-title">Create Post</h2><button type="button" class="icon-button" data-modal-close><span data-icon="x"></span></button></header>
+      <form data-post-form>
+        <div class="composer-author"><span class="avatar" data-current-avatar></span><strong data-current-name>Player</strong></div>
+        <label class="audience-selector">Audience<select name="visibility"><option value="global">Public community</option><option value="friends">Friends only</option></select></label>
+        <textarea name="body" maxlength="5000" placeholder="What's happening in MMOnsterpatch?" required></textarea>
+        <div class="media-preview hidden" data-media-preview></div>
+        <label class="attachment-button"><span data-icon="image"></span>Add photo<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-post-image></label>
+        <div class="form-error" data-post-error></div>
+        <footer><button class="secondary-button" type="button" data-modal-close>Cancel</button><button class="primary-button" type="submit">Post</button></footer>
+      </form>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden" data-modal="report">
+    <section class="modal compact" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
+      <header><h2 id="report-modal-title">Report Post</h2><button type="button" class="icon-button" data-modal-close><span data-icon="x"></span></button></header>
+      <form data-report-form>
+        <label>Reason<select name="reason" required><option value="">Choose a reason</option><option>Spam</option><option>Harassment</option><option>Hate or abuse</option><option>Scam or impersonation</option><option>Inappropriate content</option><option>Other</option></select></label>
+        <label>Details<textarea name="details" maxlength="1000" placeholder="Add context for the moderation team"></textarea></label>
+        <div class="form-error" data-report-error></div>
+        <footer><button class="secondary-button" type="button" data-modal-close>Cancel</button><button class="danger-button" type="submit">Submit Report</button></footer>
+      </form>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden" data-modal="theme">
+    <section class="modal theme-modal" role="dialog" aria-modal="true" aria-labelledby="theme-modal-title">
+      <header><h2 id="theme-modal-title">Choose Your Theme</h2><button type="button" class="icon-button" data-modal-close><span data-icon="x"></span></button></header>
+      <form data-theme-form>
+        <div class="theme-presets" data-theme-presets></div>
+        <h3>Custom colors</h3>
+        <div class="color-grid">
+          <label>Primary<input type="color" name="primaryColor" value="#285b46"></label>
+          <label>Accent<input type="color" name="accentColor" value="#d7a84a"></label>
+        </div>
+        <footer><button class="secondary-button" type="button" data-theme-reset>Reset</button><button class="primary-button" type="submit">Save Theme</button></footer>
+      </form>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden" data-modal="new-message">
+    <section class="modal compact" role="dialog" aria-modal="true" aria-labelledby="new-message-title">
+      <header><h2 id="new-message-title">Find a Player</h2><button type="button" class="icon-button" data-modal-close><span data-icon="x"></span></button></header>
+      <div class="member-search-wrap">
+        <label>Search players<input type="search" placeholder="Search username or display name" data-member-search></label>
+        <div data-member-results class="member-results"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" role="status" aria-live="polite" data-toast></div>
 </body>
 </html>

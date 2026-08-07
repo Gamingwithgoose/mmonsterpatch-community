@@ -1,12 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
-  <title id="title">MMOnsterpatch</title>
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#2e6b52"/>
-      <stop offset="1" stop-color="#173328"/>
-    </linearGradient>
-  </defs>
-  <rect x="8" y="8" width="112" height="112" rx="31" fill="url(#g)"/>
-  <path d="M28 86V42h17l19 24 19-24h17v44H83V64L64 87 45 64v22z" fill="#fff9e9"/>
-  <path d="M24 30h80" stroke="#d8c27a" stroke-width="7" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" shape-rendering="crispEdges">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#123d31"/><stop offset="1" stop-color="#2d7659"/></linearGradient></defs>
+<rect width="64" height="64" rx="14" fill="url(#bg)"/>
+<path fill="#f5e7ad" d="M32 6 48 18 54 36 42 54H22L10 36l6-18z"/>
+<path fill="#d79c45" d="m32 11 12 9 5 15-10 14H25L15 35l5-15z"/>
+<path fill="#fff8dc" d="M21 24h8v8h6v-8h8v22h-8v-8h-6v8h-8z"/>
+<path fill="#123d31" d="M29 15h6v5h-6zM14 33h5v6h-5zM45 33h5v6h-5z"/>
 </svg>

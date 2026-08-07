@@ -580,3 +580,18 @@ img { max-width: 100%; }
   .image-lightbox { height: 100dvh; border-radius: 0; border: 0; }
 }
 .post-actions button[data-react].active { color: #e26b78; }
+
+/* v0.5.2 exact game-avatar rendering — retained after user stylesheet merge.
+   The game portrait is a 20x30 two-layer sprite. Never crop or square-resize it. */
+.avatar.game-avatar img,
+.character-art img[src*="/community-character-assets/"],
+.character-art img[src*="community-character-assets/"] {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  padding: 0;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.avatar-xl.game-avatar img { padding: 0; }

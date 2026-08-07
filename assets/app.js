@@ -153,6 +153,30 @@
     return `<a class="profile-identity-link profile-avatar-link" href="${attr(profileHref(person))}" aria-label="View ${attr(person?.displayName || "player")} profile">${avatarHtml(person, classes)}</a>`;
   }
 
+  function linkifyText(value) {
+    const text = String(value ?? "");
+    const urlPattern = /https?:\/\/[^\s<>"']+/gi;
+    let output = "";
+    let lastIndex = 0;
+    let match;
+    while ((match = urlPattern.exec(text)) !== null) {
+      output += escapeHtml(text.slice(lastIndex, match.index));
+      let url = match[0];
+      let trailing = "";
+      while (url.length && /[.,!?;:)\]]$/.test(url)) {
+        trailing = url.slice(-1) + trailing;
+        url = url.slice(0, -1);
+      }
+      if (url) {
+        output += `<a class="rich-text-link" href="${attr(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(url)}</a>`;
+      }
+      output += escapeHtml(trailing);
+      lastIndex = match.index + match[0].length;
+    }
+    output += escapeHtml(text.slice(lastIndex));
+    return output.replace(/\r?\n/g, "<br>");
+  }
+
   function currentMainCharacter() {
     const id = state.me?.profile?.mainCharacterId;
     return state.characters.find(c => c.characterId === id) || null;
@@ -294,11 +318,13 @@
       return;
     }
     root.innerHTML = state.friends.slice(0,8).map(friend => `
-      <button class="friend-row" type="button" data-open-thread-user="${attr(friend.accountId)}">
-        ${avatarHtml(friend,"avatar-small")}
-        <span><strong>${escapeHtml(friend.displayName)}</strong><small>${friend.mainCharacterName ? `${escapeHtml(friend.mainCharacterName)} · Rank ${escapeHtml(friend.rank || "E")}` : "MMOnsterpatch account"}</small></span>
+      <div class="friend-row">
+        ${profileAvatarLink(friend,"avatar-small")}
+        <a class="profile-identity-link friend-row-profile" href="${attr(profileHref(friend))}"><span><strong>${escapeHtml(friend.displayName)}</strong><small>${friend.mainCharacterName ? `${escapeHtml(friend.mainCharacterName)} · Rank ${escapeHtml(friend.rank || "E")}` : "MMOnsterpatch account"}</small></span></a>
         <i class="presence ${friend.online ? "online" : ""}"></i>
-      </button>`).join("");
+        <button class="friend-row-message" type="button" data-open-thread-user="${attr(friend.accountId)}" aria-label="Message ${attr(friend.displayName || "player")}"><span data-icon="message-circle"></span></button>
+      </div>`).join("");
+    injectIcons(root);
     root.querySelectorAll("[data-open-thread-user]").forEach(btn => btn.addEventListener("click", () => startThread(btn.dataset.openThreadUser)));
   }
 
@@ -410,7 +436,7 @@
     if (!original) return `<div class="embedded-post unavailable"><strong>Post unavailable</strong><p>The original post was removed or is no longer visible to you.</p></div>`;
     return `<div class="embedded-post">
       <div class="embedded-post-head">${profileAvatarLink(original.author || {},"avatar-tiny")}<span><a class="profile-identity-link" href="${attr(profileHref(original.author || {}))}"><strong>${escapeHtml(original.author?.displayName || "Player")}</strong></a><a class="embedded-post-date" href="#/post/${encodeURIComponent(original.postId)}?panel=comments"><small>${formatDate(original.createdUtc)}</small></a></span></div>
-      ${original.body ? `<div class="embedded-post-body">${escapeHtml(original.body)}</div>` : ""}
+      ${original.body ? `<div class="embedded-post-body">${linkifyText(original.body)}</div>` : ""}
       ${original.mediaUrl ? mediaHtml(original.mediaUrl,"Original post image","embedded") : ""}
     </div>`;
   }
@@ -443,7 +469,7 @@
           </div>
         </div>
       </header>
-      ${post.body ? `<div class="post-body">${escapeHtml(post.body)}</div>` : ""}
+      ${post.body ? `<div class="post-body">${linkifyText(post.body)}</div>` : ""}
       ${isRepost ? embeddedPostHtml(post.originalPost) : ""}
       ${post.mediaUrl ? mediaHtml(post.mediaUrl) : ""}
       <div class="post-summary"><button type="button" class="summary-link" data-open-reactions><span data-reaction-count>${Number(post.reactionCount || 0)}</span> <span data-reaction-word>${Number(post.reactionCount || 0) === 1 ? "reaction" : "reactions"}</span></button><button type="button" class="summary-link" data-open-comments><span data-comment-count>${Number(post.commentCount || 0)}</span> <span data-comment-word>${Number(post.commentCount || 0) === 1 ? "comment" : "comments"}</span></button></div>
@@ -462,7 +488,7 @@
 
   function commentHtml(comment) {
     const author = comment.author || {};
-    return `<div class="comment-row" data-comment-id="${attr(comment.commentId || "")}">${profileAvatarLink(author,"avatar-small")}<div class="comment-bubble"><a class="profile-identity-link" href="${attr(profileHref(author))}"><strong>${escapeHtml(author.displayName || "Player")}</strong></a><p>${escapeHtml(comment.body)}</p><small>${formatDate(comment.createdUtc)}</small></div></div>`;
+    return `<div class="comment-row" data-comment-id="${attr(comment.commentId || "")}">${profileAvatarLink(author,"avatar-small")}<div class="comment-bubble"><a class="profile-identity-link" href="${attr(profileHref(author))}"><strong>${escapeHtml(author.displayName || "Player")}</strong></a><p>${linkifyText(comment.body)}</p><small>${formatDate(comment.createdUtc)}</small></div></div>`;
   }
 
   function reactionMemberHtml(reaction) {
@@ -612,7 +638,7 @@
       </div>
       <nav class="profile-tabs"><a class="active" href="#/profile">Posts</a><a href="#/characters">Characters</a><a href="#/friends">Friends</a></nav>
     </section>
-    <section class="content-card section-card"><h2>About</h2><p>${profile.bio?escapeHtml(profile.bio):'<span style="color:var(--muted)">No biography added yet.</span>'}</p></section>
+    <section class="content-card section-card"><h2>About</h2><p>${profile.bio?linkifyText(profile.bio):'<span style="color:var(--muted)">No biography added yet.</span>'}</p></section>
     <section class="feed-stack" style="margin-top:12px" data-profile-posts></section>`;
     injectIcons(root);
     const data=await api(`/community/profiles/${encodeURIComponent(account.accountId)}/posts`);
@@ -640,7 +666,7 @@
         </div>
         <nav class="profile-tabs"><a class="active" href="#/profile/${encodeURIComponent(accountId)}">Posts</a></nav>
       </section>
-      <section class="content-card section-card"><h2>About</h2><p>${data.bio?escapeHtml(data.bio):'<span style="color:var(--muted)">No biography added yet.</span>'}</p></section>
+      <section class="content-card section-card"><h2>About</h2><p>${data.bio?linkifyText(data.bio):'<span style="color:var(--muted)">No biography added yet.</span>'}</p></section>
       <section class="feed-stack" style="margin-top:12px" data-profile-posts></section>`;
     injectIcons(root);
     root.querySelector("[data-public-profile-message]")?.addEventListener("click", async event => { await startThread(event.currentTarget.dataset.publicProfileMessage); });
@@ -673,10 +699,10 @@
     await loadFriends();
     const root=document.querySelector("#view-root");
     const incoming = state.incomingFriendRequests || [];
-    const requests = incoming.length ? `<section class="content-card section-card"><div class="section-heading"><h2>Friend Requests</h2><span>${incoming.length}</span></div><div class="member-grid compact-grid">${incoming.map(friend=>`<article class="member-card request-card">${avatarHtml(friend,"avatar-large")}<span><strong>${escapeHtml(friend.displayName)}</strong><small>${friend.verifiedPlayer?`Verified Player${friend.rank?` · Rank ${escapeHtml(friend.rank)}`:""}`:"MMOnsterpatch account"}</small></span><div class="request-actions"><button class="primary-button" type="button" data-accept-friend="${attr(friend.accountId)}">Accept</button><button class="secondary-button" type="button" data-open-thread-user="${attr(friend.accountId)}">Message</button></div></article>`).join("")}</div></section>` : "";
+    const requests = incoming.length ? `<section class="content-card section-card"><div class="section-heading"><h2>Friend Requests</h2><span>${incoming.length}</span></div><div class="member-grid compact-grid">${incoming.map(friend=>`<article class="member-card request-card">${profileAvatarLink(friend,"avatar-large")}<a class="profile-identity-link member-profile-copy" href="${attr(profileHref(friend))}"><span><strong>${escapeHtml(friend.displayName)}</strong><small>${friend.verifiedPlayer?`Verified Player${friend.rank?` · Rank ${escapeHtml(friend.rank)}`:""}`:"MMOnsterpatch account"}</small></span></a><div class="request-actions"><button class="primary-button" type="button" data-accept-friend="${attr(friend.accountId)}">Accept</button><button class="secondary-button" type="button" data-open-thread-user="${attr(friend.accountId)}">Message</button></div></article>`).join("")}</div></section>` : "";
     root.innerHTML=`<div class="page-head"><div><h1>Friends</h1><p>Players you have connected with.</p></div><button class="primary-button" data-find-people><span data-icon="plus"></span>Find Players</button></div>
       ${requests}
-      ${state.friends.length?`<div class="member-grid">${state.friends.map(friend=>`<article class="content-card member-card">${avatarHtml(friend,"avatar-large")}<span><strong>${escapeHtml(friend.displayName)}</strong><small>${friend.mainCharacterName?`${escapeHtml(friend.mainCharacterName)} · Rank ${escapeHtml(friend.rank||"E")}`:"MMOnsterpatch account"}</small></span><div class="member-card-actions"><button type="button" aria-label="Message" data-open-thread-user="${attr(friend.accountId)}"><span data-icon="message-circle"></span></button></div></article>`).join("")}</div>`:`<section class="content-card empty-card"><div class="empty-icon" data-icon="users"></div><h2>No friends yet</h2><p>Use Find Players to connect with other MMOnsterpatch members.</p></section>`}`;
+      ${state.friends.length?`<div class="member-grid">${state.friends.map(friend=>`<article class="content-card member-card">${profileAvatarLink(friend,"avatar-large")}<a class="profile-identity-link member-profile-copy" href="${attr(profileHref(friend))}"><span><strong>${escapeHtml(friend.displayName)}</strong><small>${friend.mainCharacterName?`${escapeHtml(friend.mainCharacterName)} · Rank ${escapeHtml(friend.rank||"E")}`:"MMOnsterpatch account"}</small></span></a><div class="member-card-actions"><button type="button" aria-label="Message" data-open-thread-user="${attr(friend.accountId)}"><span data-icon="message-circle"></span></button></div></article>`).join("")}</div>`:`<section class="content-card empty-card"><div class="empty-icon" data-icon="users"></div><h2>No friends yet</h2><p>Use Find Players to connect with other MMOnsterpatch members.</p></section>`}`;
     injectIcons(root);
     root.querySelector("[data-find-people]")?.addEventListener("click",()=>{openModal("new-message");const input=document.querySelector("[data-member-search]");if(input){input.value="";input.focus();document.querySelector("[data-member-results]").innerHTML="";}});
     root.querySelectorAll("[data-open-thread-user]").forEach(btn=>btn.addEventListener("click",()=>startThread(btn.dataset.openThreadUser)));
@@ -860,7 +886,7 @@
   }
 
   function messageHtml(m) {
-    return `<div class="message-row ${m.mine?"mine":""} ${m.deleted?"deleted":""}" data-message-id="${attr(m.messageId)}"><div class="message-bubble">${m.deleted?"Message deleted":escapeHtml(m.body)}</div>${m.mine&&!m.deleted&&m.canDelete?`<div class="message-options"><button type="button" aria-label="Delete your message" data-delete-message><span data-icon="trash"></span></button></div>`:""}</div>`;
+    return `<div class="message-row ${m.mine?"mine":""} ${m.deleted?"deleted":""}" data-message-id="${attr(m.messageId)}"><div class="message-bubble">${m.deleted?"Message deleted":linkifyText(m.body)}</div>${m.mine&&!m.deleted&&m.canDelete?`<div class="message-options"><button type="button" aria-label="Delete your message" data-delete-message><span data-icon="trash"></span></button></div>`:""}</div>`;
   }
 
   function bindMessageDeletes(root) {
@@ -1029,9 +1055,10 @@
         else if(incomingIds.has(m.accountId)) friendshipButton=`<button type="button" class="primary-button small" data-accept-member="${attr(m.accountId)}">Accept Request</button>`;
         else if(outgoingIds.has(m.accountId)) friendshipButton='<span class="relationship-label">Request Sent</span>';
         else friendshipButton=`<button type="button" class="secondary-button small" data-add-member="${attr(m.accountId)}">Add Friend</button>`;
-        return `<div class="member-result">${avatarHtml(m,"avatar-small")}<span class="member-result-copy"><strong>${escapeHtml(m.displayName)}</strong><small>${m.verifiedPlayer?`Verified Player${m.rank?` · Rank ${escapeHtml(m.rank)}`:""}`:"MMOnsterpatch account"}</small></span><div class="member-result-actions">${friendshipButton}<button type="button" class="icon-button" aria-label="Message" data-message-member="${attr(m.accountId)}"><span data-icon="message-circle"></span></button></div></div>`;
+        return `<div class="member-result">${profileAvatarLink(m,"avatar-small")}<a class="profile-identity-link member-result-copy" href="${attr(profileHref(m))}" data-member-profile-link><span><strong>${escapeHtml(m.displayName)}</strong><small>${m.verifiedPlayer?`Verified Player${m.rank?` · Rank ${escapeHtml(m.rank)}`:""}`:"MMOnsterpatch account"}</small></span></a><div class="member-result-actions">${friendshipButton}<button type="button" class="icon-button" aria-label="Message" data-message-member="${attr(m.accountId)}"><span data-icon="message-circle"></span></button></div></div>`;
       }).join(""):'<div class="empty-card"><p>No players found.</p></div>';
       injectIcons(root);
+      root.querySelectorAll("[data-member-profile-link], .profile-avatar-link").forEach(link=>link.addEventListener("click",()=>closeModal("new-message")));
       root.querySelectorAll("[data-message-member]").forEach(btn=>btn.addEventListener("click",()=>startThread(btn.dataset.messageMember)));
       root.querySelectorAll("[data-add-member]").forEach(btn=>btn.addEventListener("click",async()=>{try{await api("/community/friends/request",{method:"POST",body:JSON.stringify({accountId:btn.dataset.addMember})});toast("Friend request sent.");await loadFriends();await searchMembers(q);}catch(ex){toast(ex.message);}}));
       root.querySelectorAll("[data-accept-member]").forEach(btn=>btn.addEventListener("click",async()=>{try{await api(`/community/friends/${encodeURIComponent(btn.dataset.acceptMember)}/accept`,{method:"POST"});toast("Friend request accepted.");await loadFriends();await searchMembers(q);}catch(ex){toast(ex.message);}}));

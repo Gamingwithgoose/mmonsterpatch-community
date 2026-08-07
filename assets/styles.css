@@ -156,8 +156,11 @@ img { max-width: 100%; }
 .friend-list { display: grid; gap: 3px; }
 .friend-row { width: 100%; border: 0; background: transparent; display: flex; align-items: center; gap: 9px; padding: 7px; border-radius: 10px; text-align: left; }
 .friend-row:hover { background: var(--surface-3); }
-.friend-row > span:nth-child(2) { flex: 1; min-width: 0; display: grid; }
+.friend-row-profile { flex: 1; min-width: 0; display: block; }
+.friend-row-profile > span { display: grid; min-width: 0; }
 .friend-row small { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.friend-row-message { width: 32px; height: 32px; flex: 0 0 auto; border: 0; border-radius: 50%; display: grid; place-items: center; background: transparent; color: var(--primary); }
+.friend-row-message:hover { background: var(--surface-2); }
 .presence { width: 9px; height: 9px; border-radius: 50%; background: #929b95; border: 2px solid var(--surface); }
 .presence.online { background: var(--success); }
 
@@ -281,7 +284,8 @@ img { max-width: 100%; }
 .tab-bar button.active { background: var(--primary-soft); color: var(--primary); }
 .member-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 11px; }
 .member-card { display: flex; gap: 11px; align-items: center; padding: 13px; }
-.member-card > span:nth-child(2) { flex: 1; min-width: 0; display: grid; }
+.member-profile-copy { flex: 1; min-width: 0; display: block; }
+.member-profile-copy > span { display: grid; min-width: 0; }
 .member-card small { color: var(--muted); }
 .member-card-actions { display: flex; gap: 5px; }
 .member-card-actions button { width: 36px; height: 36px; border: 0; border-radius: 50%; display: grid; place-items: center; background: var(--surface-3); color: var(--primary); }
@@ -337,7 +341,7 @@ img { max-width: 100%; }
 .member-results { display: grid; gap: 5px; max-height: 320px; overflow: auto; }
 .member-result { display: flex; align-items: center; gap: 9px; border: 0; background: transparent; padding: 8px; border-radius: 9px; text-align: left; }
 .member-result:hover { background: var(--surface-3); }
-.member-result span:nth-child(2) { display: grid; }
+.member-result-copy > span { display: grid; min-width: 0; }
 .member-result small { color: var(--muted); }
 .toast { position: fixed; right: 20px; bottom: 20px; z-index: 500; max-width: 370px; padding: 12px 15px; border-radius: 12px; background: var(--primary-strong); color: white; font-weight: 700; box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(18px); pointer-events: none; transition: .18s; }
 .toast.show { opacity: 1; transform: none; }
@@ -612,3 +616,10 @@ img { max-width: 100%; }
 .embedded-post-date:hover { text-decoration: underline; }
 .reaction-member-link { color: inherit; text-decoration: none; }
 .public-profile-identity { display: block; margin-top: 4px; color: var(--muted); }
+
+/* v0.6.2 profile discovery + safe rich-text hyperlinks */
+.rich-text-link { color: var(--primary); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; overflow-wrap: anywhere; word-break: break-word; }
+.rich-text-link:hover { color: var(--accent); }
+.message-row.mine .rich-text-link { color: inherit; }
+.member-profile-copy:hover strong, .member-result-copy:hover strong, .friend-row-profile:hover strong { text-decoration: underline; text-underline-offset: 2px; }
+.member-profile-copy:focus-visible, .member-result-copy:focus-visible, .friend-row-profile:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 6px; }

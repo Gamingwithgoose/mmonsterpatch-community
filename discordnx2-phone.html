@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://*.hcaptcha.com https://hcaptcha.com; frame-src https://*.hcaptcha.com https://hcaptcha.com; style-src 'unsafe-inline' https://*.hcaptcha.com https://hcaptcha.com; connect-src https://*.hcaptcha.com https://hcaptcha.com; img-src data: https://*.hcaptcha.com https://hcaptcha.com; base-uri 'none'; form-action http:">
+<title>DiscordNX2 phone verification</title>
+<style>body{margin:0;background:#17191f;color:#eef0fa;font:17px system-ui;line-height:1.5}main{max-width:520px;margin:32px auto;padding:24px;background:#242731;border-radius:24px}h1{font-size:25px;margin-top:0}p{color:#c8cbd6}button{border:0;border-radius:14px;background:#5865f2;color:white;font:inherit;padding:14px 24px;margin-top:24px}button:disabled{opacity:.5}#challenge{margin-top:24px}</style></head>
+<body><main><h1>Verify your Discord login</h1><p id="status">Keep your Switch open and connect this phone to the same Wi-Fi. Complete the challenge yourself below.</p><div id="challenge"></div><button id="send" type="button" disabled>Send to Switch</button><p>The result is encrypted for your Switch. No Discord account token or login ticket enters this page. Your browser may ask you to continue to a local address when you send it.</p></main>
+<script>
+'use strict';
+const params=new URLSearchParams(location.hash.slice(1));
+const state=params.get('state')||'',sitekey=params.get('sitekey')||'',rqdata=params.get('rqdata')||'';
+const pub=params.get('pub')||'',back=params.get('return')||'';
+history.replaceState(null,'',location.pathname);
+let sealed='',finished=false,busy=false,valid=false,generation=0;
+const button=document.getElementById('send');
+function message(text){document.getElementById('status').textContent=text;}
+function privateReturn(value){
+ try{
+  const u=new URL(value),p=u.hostname.split('.');
+  if(u.protocol!=='http:'||u.username||u.password||u.pathname!=='/captcha-return'||u.search||u.hash||p.length!==4||!u.port)return false;
+  // Canonical dotted decimal only: reject alternate numeric notation and DNS names.
+  if(p.some(s=>!/^\d{1,3}$/.test(s)||String(Number(s))!==s||Number(s)>255)||u.hostname!==value.slice(7).split(':')[0])return false;
+  const n=p.map(Number);return n[0]===10||(n[0]===172&&n[1]>=16&&n[1]<=31)||(n[0]===192&&n[1]===168);
+ }catch{return false;}
+}
+function decode64(value){return Uint8Array.from(atob(value),c=>c.charCodeAt(0));}
+function encode64(bytes){return btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+async function seal(token){
+ if(!valid||finished||busy||typeof token!=='string'||!token||token.length>2048||!/^[\x21-\x7e]+$/.test(token))return;
+ busy=true;const serial=++generation;
+ try{
+  const key=crypto.getRandomValues(new Uint8Array(32)),iv=crypto.getRandomValues(new Uint8Array(12));
+  const aes=await crypto.subtle.importKey('raw',key,'AES-GCM',false,['encrypt']);
+  const rsa=await crypto.subtle.importKey('spki',decode64(pub),{name:'RSA-OAEP',hash:'SHA-256'},false,['encrypt']);
+  const wrapped=new Uint8Array(await crypto.subtle.encrypt({name:'RSA-OAEP'},rsa,key));
+  key.fill(0);
+  const text=new TextEncoder().encode(state+'\n'+token);
+  const data=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:new TextEncoder().encode('DiscordNX2 CAPTCHA v1:'+state),tagLength:128},aes,text));
+  text.fill(0);
+  if(wrapped.length!==256)throw new Error('key size');
+  const envelope=new Uint8Array(1+256+12+data.length);envelope[0]=1;envelope.set(wrapped,1);envelope.set(iv,257);envelope.set(data,269);
+  if(serial!==generation)return;
+  sealed=encode64(envelope);button.disabled=false;message('Verification complete. Tap Send to Switch. If prompted, continue to the local address; only the encrypted result is sent.');
+ }catch{message('Encryption could not start. Return to the Switch and try a new login.');}
+ finally{busy=false;}
+}
+button.addEventListener('click',()=>{
+ if(finished||!sealed||!valid)return;
+ finished=true;button.disabled=true;
+ const form=document.createElement('form');form.method='POST';form.action=back;form.enctype='application/x-www-form-urlencoded';
+ const field=document.createElement('input');field.type='hidden';field.name='payload';field.value=sealed;form.appendChild(field);document.body.appendChild(form);
+ sealed='';form.submit();
+});
+function ready(){
+ valid=params.get('v')==='1'&&/^[a-f0-9]{64}$/.test(state)&&sitekey.length>0&&sitekey.length<=95&&rqdata.length<=4095&&/^[A-Za-z0-9+/]+={0,2}$/.test(pub)&&pub.length<=900&&privateReturn(back)&&!!globalThis.crypto?.subtle;
+ if(!valid){message('Invalid or unsupported verification request. Return to the Switch and start a new login.');return;}
+ const widget=hcaptcha.render('challenge',{sitekey,theme:'dark',callback:seal,
+  'error-callback':()=>message('The CAPTCHA provider could not load this challenge on this website. Return to the Switch; no verification was submitted.'),
+  'expired-callback':()=>{generation++;sealed='';button.disabled=true;message('The challenge expired. Return to the Switch and start a new login.');}});
+ if(rqdata)hcaptcha.setData(widget,{rqdata});
+}
+</script><script src="https://js.hcaptcha.com/1/api.js?onload=ready&amp;render=explicit" async defer></script></body></html>

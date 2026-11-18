@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://*.hcaptcha.com https://hcaptcha.com; frame-src https://*.hcaptcha.com https://hcaptcha.com; style-src 'unsafe-inline' https://*.hcaptcha.com https://hcaptcha.com; connect-src https://*.hcaptcha.com https://hcaptcha.com; img-src data: https://*.hcaptcha.com https://hcaptcha.com; base-uri 'none'; form-action 'none'">
+<title>DiscordNX2 verification</title>
+<style>body{background:#12141c;color:#eef0fa;font:20px system-ui;margin:48px}#challenge{margin-top:32px}p{max-width:650px;line-height:1.5}</style>
+<h1>Complete verification</h1><p id="status">Complete the challenge below yourself to continue signing in on your Switch.</p><div id="challenge"></div>
+<script>
+/* Only CAPTCHA widget data enters this page. Never accept account credentials. */
+const params=new URLSearchParams(location.hash.slice(1));
+const state=params.get('state')||'',sitekey=params.get('sitekey')||'',rqdata=params.get('rqdata')||'';
+history.replaceState(null,'',location.pathname);
+function message(s){document.getElementById('status').textContent=s;}
+let finished=false;
+function ready(){
+ if(!/^[a-f0-9]{64}$/.test(state)||!sitekey||sitekey.length>95||rqdata.length>4095){message('Invalid verification request. Return to the Switch and try again.');return;}
+ const widget=hcaptcha.render('challenge',{sitekey:sitekey,theme:'dark',callback:function(token){
+  if(finished||typeof token!=='string'||!token||token.length>2048)return;
+  finished=true;location.replace('https://discordnx2.invalid/captcha-return#state='+state+'&token='+encodeURIComponent(token));
+ },'error-callback':function(){message('Verification could not load on this browser or website. Return to the Switch.');},'expired-callback':function(){message('Verification expired. Return to the Switch and try again.');}});
+ if(rqdata)hcaptcha.setData(widget,{rqdata:rqdata});
+}
+</script><script src="https://js.hcaptcha.com/1/api.js?onload=ready&amp;render=explicit" async defer></script></html>

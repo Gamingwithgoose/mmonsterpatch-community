@@ -43,9 +43,41 @@ h1,h2,h3,.top-brand,.brand-lockup strong,.auth-copy h1,.profile-title h1,.page-h
 .avatar img { object-fit:contain; image-rendering:pixelated; }
 .avatar-fallback { width:100%;height:100%;object-fit:contain;image-rendering:pixelated; }
 .avatar-xl { border-radius:18px; }
-.verified-badge { color:#6a4b12; border-width:2px; box-shadow:0 2px 0 rgba(106,75,18,.12); }
+.verified-badge { color:#6a4b12; border-width:1px; box-shadow:none; }
 :root[data-mode="dark"] .verified-badge { color:#ffe8a6; }
 .rank-badge { border:1px solid var(--line); }
+/* Identity badges use the Owner badge's compact height and text size.
+   Labels retain their font/color and natural width; none are truncated. */
+.verified-badge,
+.rank-badge,
+.permission-badge {
+  box-sizing:border-box;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  width:max-content;
+  height:1.875rem;
+  padding:.3125rem .5625rem;
+  gap:.3125rem;
+  font-size:.72rem;
+  line-height:1;
+  white-space:nowrap;
+}
+.verified-badge [data-icon],
+.permission-badge [data-icon] {
+  display:inline-flex;
+  align-items:center;
+  flex:0 0 auto;
+  line-height:1;
+}
+.verified-badge .icon,
+.permission-badge .icon {
+  width:.9375rem;
+  height:.9375rem;
+  flex:0 0 auto;
+}
+
 .server-card { overflow:hidden; position:relative; }
 .server-card::after { content:""; position:absolute; right:-18px; bottom:-22px; width:90px;height:90px; background:url("monsterpatch-title-logo.png") center/contain no-repeat; opacity:.07; }
 .status-dot { border-radius:3px !important; transform:rotate(45deg); }
